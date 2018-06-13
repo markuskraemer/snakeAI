@@ -1,3 +1,5 @@
+import { ConfigService } from './config.service';
+import { GameService } from './game/game.service';
 import { Component } from '@angular/core';
 
 @Component({
@@ -6,5 +8,12 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app';
+ 
+    constructor(
+        public gameService:GameService,
+        public configService:ConfigService
+    ){
+        
+    }
+
 }
