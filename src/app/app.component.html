@@ -1,5 +1,12 @@
 
-Food: {{gameService.eatenFoodCount}} | Time:{{gameService.time | date:'mm:ss'}}<br>
+
+Ticks:{{tickService.ticks}} | Time:{{ tickService.ticks | date:'mm:ss' }}<br>
+<input type="button" value="{{tickService.isRunning?'Stop':'Start'}}" (click)="tickService.isRunning?tickService.stop():tickService.start()">
+Food: {{gameService.eatenFoodCount}} | Time:{{gameService.time | date:'mm:ss'}} | bestLength: {{gameService.bestLength }}<br>
 <app-game-bg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"></app-game-bg>
 <app-game-fg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"
      [snake]="gameService.snake" [foodPos]="gameService.foodPos"></app-game-fg>
+
+<div class="ui">
+    <app-neuralNetwork [network]="gameService.snake?gameService.snake.brain:null"></app-neuralNetwork>
+</div>

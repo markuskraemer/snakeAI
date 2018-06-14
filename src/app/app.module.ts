@@ -1,3 +1,4 @@
+import { NeuralNetworkComponent } from './components/neuralNetwork/neuralNetwork.component';
 import { GameForegroundComponent } from './components/game-fg/game-fg.component';
 import { StorageService } from './storage/storage.service';
 import { ConfigService } from './config.service';
@@ -16,7 +17,8 @@ import { AppComponent } from './app.component';
   declarations: [
     AppComponent,
     GameBackgroudComponent,
-    GameForegroundComponent
+    GameForegroundComponent,
+    NeuralNetworkComponent
   ],
   imports: [
     BrowserModule

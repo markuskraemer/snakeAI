@@ -8,21 +8,14 @@ export class Snake {
     public direction:Direction = Direction.Right;
     public hasEaten:boolean;
     public isDead:boolean;
+    public ticks:number = 0;
+    public noFoodTicks:number = 0;
 
     constructor (){
-        this.bodyParts = [new XY (), new XY (), new XY()];
-        Alias.keyboardService.mapDown (Key.W, () => { if(this.direction != Direction.Down) this.direction = Direction.Up });
-        Alias.keyboardService.mapDown (Key.D, () => { if(this.direction != Direction.Left) this.direction = Direction.Right });
-        Alias.keyboardService.mapDown (Key.A, () => { if(this.direction != Direction.Right) this.direction = Direction.Left });
-        Alias.keyboardService.mapDown (Key.S, () => { if(this.direction != Direction.Up) this.direction = Direction.Down });
+        this.bodyParts = [new XY ()];
     }
 
     public destroy ():void {
-        Alias.keyboardService.unmapDown (Key.W);
-        Alias.keyboardService.unmapDown (Key.D);
-        Alias.keyboardService.unmapDown (Key.A);
-        Alias.keyboardService.unmapDown (Key.S);
-        
     }
 
     public setHeadPosition (pos:XY) {
@@ -34,6 +27,7 @@ export class Snake {
 
 
     public tick () {
+        ++this.ticks;
         const newPos:XY = this.moveHead ();
         if(this.headIsOnMap (newPos)){
             this.checkEat (newPos);
@@ -41,17 +35,16 @@ export class Snake {
 
             if(this.findIndexInBody (this.bodyParts[0]) > 0){
                 this.isDead = true;
-                Alias.gameService.snakeCollision ();                
+                Alias.gameService.snakeDead ();                
             }
         }else{
             this.isDead = true;
-            Alias.gameService.snakeCollision ();
+            Alias.gameService.snakeDead ();
         }       
     }
 
     private headIsOnMap (headPos:XY):boolean {
         if(headPos.x < 0 || headPos.x >= Alias.gameService.width || headPos.y < 0 || headPos.y >= Alias.gameService.height){
-            console.log("bumm!!" + headPos);
             return false;
         }
         return true;
@@ -76,8 +69,10 @@ export class Snake {
         if(headPos.equals(Alias.gameService.foodPos)){
             this.hasEaten = true;
             Alias.gameService.eatFood ();
+            this.noFoodTicks = 0;
         }else{
             this.hasEaten = false;
+            this.noFoodTicks ++;
         }
     }
 

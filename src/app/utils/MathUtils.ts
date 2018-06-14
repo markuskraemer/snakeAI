@@ -20,7 +20,7 @@ export class MathUtils {
         return n;
     }
 
-    public static sigmoid (n:number):number {
+    public static sigmoid (n:number):number {     
         return 1 / (1 + Math.pow(Math.E, -n));
     }
 

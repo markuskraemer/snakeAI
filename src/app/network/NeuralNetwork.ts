@@ -45,6 +45,14 @@ export class NeuralNetwork {
         return result;
     }
 
+    public getInputNeuronFromName (name:string):InputNeuron {
+        return this.inputLayer.find( (inputNeuron:InputNeuron) => { return inputNeuron.name == name; } );
+    }
+
+    public getOutputNeuronFromName (name:string):WorkingNeuron {
+        return this.outputLayer.find( (neuron:WorkingNeuron) => { return neuron.name == name; } );
+    }
+
     private getNeuronInfo (layerIndex:number, neuronIndex:number):string {
         const neuron:Neuron = this._layers[layerIndex][neuronIndex];
         let result:string = '  ' + neuron.name + '\n';

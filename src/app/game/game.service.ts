@@ -1,3 +1,5 @@
+import { AISnake } from './AISnake';
+import { PlayerSnake } from './PlayerSnake';
 import { XY } from './../model/XY';
 import { Alias } from './../Alias';
 import { StorageService } from './../storage/storage.service';
@@ -14,11 +16,14 @@ export class GameService {
     private _foodPos:XY = new XY ();
     private _secs:number;
     private _timeInterval:any;
-    public readonly width:number = 20;
-    public readonly height:number = 20;
+    public width:number;
+    public height:number;
     public eatenFoodCount:number;
-    public snake:Snake;
-    
+    public snake:AISnake;
+    public bestTime:number = 0;
+    public bestLength:number = 0;
+    public bestSnake:AISnake;
+
     public get foodPos ():XY {
         return this._foodPos;
     }
@@ -38,6 +43,8 @@ export class GameService {
         private storageService:StorageService
     ) {
         Alias.gameService = this;
+        this.width = configService.width;
+        this.height = configService.height;
         this.startGame ();
 
         this.tickService.tick.subscribe (()=>{
@@ -46,7 +53,7 @@ export class GameService {
 
     }
 
-    public snakeCollision ():void {
+    public snakeDead ():void {
         this.stopGame ();
     }
 
@@ -64,10 +71,16 @@ export class GameService {
         clearInterval (this._timeInterval);
         this._timeInterval = setInterval ( () => this._secs += 1000, 1000);
 
-        if(this.snake)
-            this.snake.destroy ();
+        if(this.snake){
 
-        this.snake = new Snake ();
+            if(this.snake.bodyParts.length >= this.bestLength){
+                this.bestLength = this.snake.bodyParts.length;
+                this.bestSnake = this.snake;
+            }
+            this.snake.destroy ();
+        }
+
+        this.snake = this.bestSnake && Math.random () > .5 ? this.bestSnake.clone () : new AISnake ();
         this.snake.setHeadPosition (new XY (2, Math.floor(this.height / 2)));
         
         this.determineFoodPos ();

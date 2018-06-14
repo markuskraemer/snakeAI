@@ -1,3 +1,4 @@
+import { TickService } from './tick.service';
 import { ConfigService } from './config.service';
 import { GameService } from './game/game.service';
 import { Component } from '@angular/core';
@@ -11,7 +12,8 @@ export class AppComponent {
  
     constructor(
         public gameService:GameService,
-        public configService:ConfigService
+        public configService:ConfigService,
+        public tickService:TickService
     ){
         
     }
