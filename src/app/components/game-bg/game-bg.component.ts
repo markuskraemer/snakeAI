@@ -53,9 +53,9 @@ export class GameBackgroudComponent implements OnChanges {
             for(let j:number = 0; j < this.height; ++j){
                 context.strokeStyle = 'white';
                 context.lineWidth = .5;
-                context.fillStyle = 'black';
+                context.fillStyle = (i * this.width + j) %2 == 0 ? '#00ee00' : '#00cc00';
                 context.fillRect (i * this.tileSize, j * this.tileSize, this.tileSize, this.tileSize);                
-                context.strokeRect (i * this.tileSize, j * this.tileSize, this.tileSize, this.tileSize);                
+               // context.strokeRect (i * this.tileSize, j * this.tileSize, this.tileSize, this.tileSize);                
             }
         }
     }

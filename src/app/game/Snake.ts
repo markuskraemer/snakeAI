@@ -10,8 +10,10 @@ export class Snake {
     public isDead:boolean;
     public ticks:number = 0;
     public noFoodTicks:number = 0;
+    public color;
 
     constructor (){
+        this.color = 0xffffff;
         this.bodyParts = [new XY ()];
     }
 

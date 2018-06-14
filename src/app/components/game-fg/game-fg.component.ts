@@ -79,7 +79,7 @@ export class GameForegroundComponent implements OnInit {
 
             context.strokeStyle = 'black';
             context.lineWidth = 1;
-            context.fillStyle = 'white';
+            context.fillStyle = '#' + this.snake.color.toString(16);// 'white';
             context.fillRect (xPos, yPos, this.tileSize, this.tileSize);   
             context.strokeRect (xPos, yPos, this.tileSize, this.tileSize);   
             
