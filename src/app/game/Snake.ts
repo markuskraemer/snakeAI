@@ -111,7 +111,7 @@ export class Snake {
     private updateBodyParts (headPos:XY):void {
 
         if(this.hasEaten){
-            this.bodyParts.push (this.bodyParts[this.bodyParts.length-1]);
+            // this.bodyParts.push (this.bodyParts[this.bodyParts.length-1]);
         }
         for(let i:number = this.bodyParts.length-1; i > 0; --i){
             this.bodyParts[i] = this.bodyParts[i-1];

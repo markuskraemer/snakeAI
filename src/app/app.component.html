@@ -1,7 +1,11 @@
 
 <input type="button" value="Snake Info" (click)="getInfo ()"><br>
 Ticks:{{tickService.ticks}} | Time:{{ tickService.ticks | date:'mm:ss' }}<br>
-<input type="button" value="{{tickService.isRunning?'Stop':'Start'}}" (click)="tickService.isRunning?tickService.stop():tickService.start()">
+<input type="button" value="{{tickService.isRunning?'Stop':'Start'}}" (click)="tickService.isRunning?tickService.stop():tickService.start()"><br>
+<input type="checkbox" [checked]="gameService.foodNeuronsEnabled" (change)="gameService.foodNeuronsEnabled=!gameService.foodNeuronsEnabled">
+Enable Foodneurons: {{gameService.snake.foodNeuronsEnabled}}<br>
+<input type="checkbox" [checked]="gameService.bodyNeuronsEnabled" (change)="gameService.bodyNeuronsEnabled=!gameService.bodyNeuronsEnabled">
+Enable Bodyneurons: {{gameService.snake.bodyNeuronsEnabled}}<br>
 
 Food: {{gameService.eatenFoodCount}} | Length:{{gameService.snake.bodyParts.length}} | Time:{{gameService.time | date:'mm:ss'}} | bestLength: {{gameService.bestLength }}<br>
 <app-game-bg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"></app-game-bg>

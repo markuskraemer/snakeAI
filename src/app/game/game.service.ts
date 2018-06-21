@@ -16,6 +16,9 @@ export class GameService {
     private _foodPos:XY = new XY ();
     private _secs:number;
     private _timeInterval:any;
+    private _foodNeuronsEnabled:boolean = true;
+    private _bodyNeuronsEnabled:boolean = true;
+
     public width:number;
     public height:number;
     public eatenFoodCount:number;
@@ -34,6 +37,25 @@ export class GameService {
 
     public get time (){
         return this._secs;
+    }
+
+     public set bodyNeuronsEnabled (value:boolean){
+        this._bodyNeuronsEnabled = value;
+        this.snake.bodyNeuronsEnabled = this._bodyNeuronsEnabled;
+    }
+
+    public get bodyNeuronsEnabled ():boolean{
+        return this._bodyNeuronsEnabled;
+    }
+
+    public set foodNeuronsEnabled (value:boolean){
+        this._foodNeuronsEnabled = value;
+        this.snake.foodNeuronsEnabled = this._foodNeuronsEnabled;
+
+    }
+
+    public get foodNeuronsEnabled ():boolean{
+        return this._foodNeuronsEnabled;
     }
 
     constructor(
@@ -73,8 +95,8 @@ export class GameService {
 
         if(this.snake){
 
-            if(this.snake.bodyParts.length >= this.bestLength){
-                this.bestLength = this.snake.bodyParts.length;
+            if(this.snake.ticks >= this.bestLength){
+                this.bestLength = this.snake.ticks;
                 this.bestSnake = this.snake;
             }
             this.snake.destroy ();
@@ -82,7 +104,9 @@ export class GameService {
 
         this.snake = this.bestSnake && Math.random () > .5 ? this.bestSnake.clone () : new AISnake ();
         this.snake.setHeadPosition (new XY (2, Math.floor(this.height / 2)));
-        
+        this.snake.foodNeuronsEnabled = this._foodNeuronsEnabled;
+        this.snake.bodyNeuronsEnabled = this._bodyNeuronsEnabled;
+
         this.determineFoodPos ();
         this._gameBusy = true;
     } 
