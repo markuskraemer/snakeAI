@@ -181,11 +181,7 @@ export class AISnake extends Snake {
         const bodyPartsOnRow:XY[] = this.getBodyPartsOnRow (headPos.y);
         let closestDist:number = Alias.gameService.width + 2;
         for(let bodyPart of bodyPartsOnRow){
-            if(isLeft && (bodyPart.x < headPos.x)){
-                if(Math.abs(headPos.x - bodyPart.x) < closestDist){
-                    closestDist = Math.abs(headPos.x - bodyPart.x);
-                }
-            }else if(!isLeft && (bodyPart.x > headPos.x)){
+            if((isLeft && (bodyPart.x < headPos.x)) || (!isLeft && (bodyPart.x > headPos.x))){
                 if(Math.abs(headPos.x - bodyPart.x) < closestDist){
                     closestDist = Math.abs(headPos.x - bodyPart.x);
                 }
@@ -198,11 +194,7 @@ export class AISnake extends Snake {
         const bodyPartsOnCol:XY[] = this.getBodyPartsOnCol (headPos.x);
         let closestDist:number = Alias.gameService.height + 2;
         for(let bodyPart of bodyPartsOnCol){
-            if(isTop && (bodyPart.y < headPos.y)){
-                if(Math.abs(headPos.y - bodyPart.y) < closestDist){
-                    closestDist = Math.abs(headPos.y - bodyPart.y);
-                }
-            }else if(!isTop && (bodyPart.y > headPos.y){
+            if((isTop && (bodyPart.y < headPos.y)) || (!isTop && (bodyPart.y > headPos.y))) {
                 if(Math.abs(headPos.y - bodyPart.y) < closestDist){
                     closestDist = Math.abs(headPos.y - bodyPart.y);
                 }
