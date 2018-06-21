@@ -18,4 +18,8 @@ export class AppComponent {
         
     }
 
+    public getInfo ():void {
+        console.log("INFO: " + this.gameService.snake.brain.getInfo());
+    }
+
 }

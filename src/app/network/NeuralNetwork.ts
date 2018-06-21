@@ -37,7 +37,8 @@ export class NeuralNetwork {
             result += this._layers[i].length + ' ';
         }
         result += ']\n';
-        for(let i:number = 1; i < this._layers.length; ++i){
+
+        for(let i:number = 0; i < this._layers.length; ++i){
             for(let j:number = 0; j < this._layers[i].length; ++j){
                 result += this.getNeuronInfo (i, j) + '\n';
             }
@@ -55,7 +56,7 @@ export class NeuralNetwork {
 
     private getNeuronInfo (layerIndex:number, neuronIndex:number):string {
         const neuron:Neuron = this._layers[layerIndex][neuronIndex];
-        let result:string = '  ' + neuron.name + '\n';
+        let result:string = '  ' + neuron.name + ":" + neuron.input + '\n';
         if(layerIndex > 0){
             const neuron:WorkingNeuron = <WorkingNeuron> this._layers[layerIndex][neuronIndex];
             for(let i:number = 0; i < neuron.connections.length; ++i){
