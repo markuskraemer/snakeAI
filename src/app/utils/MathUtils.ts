@@ -24,6 +24,13 @@ export class MathUtils {
         return 1 / (1 + Math.pow(Math.E, -n));
     }
 
+    public static sigmoidNegPos (n:number):number {
+        if(n < 0)
+            return -MathUtils.sigmoid (-n); 
+        else
+            return MathUtils.sigmoid (n);
+    }
+
     public static round3 (f:number):number {
         f *= 1000;
         f |= 0;

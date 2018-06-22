@@ -1,9 +1,13 @@
+import { IStorable } from './../storage/IStorable';
 import { Direction } from './../model/Direction.enum';
 import { XY } from './../model/XY';
 import { Key } from 'ts-keycode-enum';
 import { Alias } from './../Alias';
-export class Snake {
 
+export class Snake implements IStorable {
+    protected static count:number = 0;
+
+    public id:string;
     public bodyParts:XY [] = [];
     public direction:Direction = Direction.Right;
     public hasEaten:boolean;
@@ -13,6 +17,7 @@ export class Snake {
     public color;
 
     constructor (){
+        this.id = '' + Snake.count ++; 
         this.color = 0xffffff;
         this.bodyParts = [new XY ()];
     }
@@ -111,7 +116,7 @@ export class Snake {
     private updateBodyParts (headPos:XY):void {
 
         if(this.hasEaten){
-            // this.bodyParts.push (this.bodyParts[this.bodyParts.length-1]);
+             this.bodyParts.push (this.bodyParts[this.bodyParts.length-1]);
         }
         for(let i:number = this.bodyParts.length-1; i > 0; --i){
             this.bodyParts[i] = this.bodyParts[i-1];

@@ -1,0 +1,18 @@
+:host {
+}
+
+.item {
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.info {
+    width:330px;
+}
+
+.preview {
+    width: 20px;
+    height:20px;
+}

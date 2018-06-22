@@ -31,7 +31,7 @@ export class NeuralNetworkComponent implements OnInit {
 
     private infoConnectionNames:string [] = [];
     private marginTopBottom:number = 20;
-    private marginLeftRight:number = 40;
+    private marginLeftRight:number = 20;
     
     private context:CanvasRenderingContext2D;
     private width:number;
@@ -74,9 +74,9 @@ export class NeuralNetworkComponent implements OnInit {
         if(this._network){
             this.context.lineWidth = 1;
             this.context.strokeStyle = 'black';
-            this.drawNeurons ();
             this.drawConnections ();
-            //this.drawValueIndicators ();
+            this.drawNeurons ();
+            this.drawValueIndicators ();
         }
     }
 
@@ -100,15 +100,22 @@ export class NeuralNetworkComponent implements OnInit {
         const neuron:Neuron = this._network.layers[layerIndex][neuronIndex];
         const x:number = this.getNeuronX(layerIndex);
         const y:number = this.getNeuronY(layerIndex, neuronIndex);
+        this.context.strokeStyle = 'black';
         this.context.beginPath();
         this.context.arc(x, y, this.radius, 0, 2 * Math.PI, false);
         this.context.stroke();
         this.context.font = '10px Arial';
+
         this.context.lineWidth = 1;
         this.context.strokeText (neuron.name || neuron.id, x + this.radius + 10, y + 5);
 
+        this.context.fillStyle = 'white';
+        this.context.fillRect (x + this.radius + 10, y + 7, 35, 20);
+
         this.context.lineWidth = .5;
         this.context.strokeText (String(MathUtils.round3 (neuron.output)), x + this.radius + 10, y + 22); 
+
+
     }
 
 
@@ -189,8 +196,8 @@ export class NeuralNetworkComponent implements OnInit {
 
 
     private getNeuronX (layerIndex:number):number {
-        const offset:number = (this.width - this.radius*2 - this.marginLeftRight*2) / (this._network.layers.length-1);  
-        return offset * layerIndex + this.radius;// + this.marginLeftRight;
+        const offset:number = (this.width - this.radius*2 - this.marginLeftRight*4) / (this._network.layers.length-1);  
+        return offset * layerIndex + this.radius + this.marginLeftRight;
     }
 
     private getNeuronY (layerIndex:number, neuronIndex:number):number {

@@ -1,3 +1,4 @@
+import { DialogService } from './ui/dialogs/dialog.service';
 import { TickService } from './tick.service';
 import { ConfigService } from './config.service';
 import { GameService } from './game/game.service';
@@ -13,7 +14,8 @@ export class AppComponent {
     constructor(
         public gameService:GameService,
         public configService:ConfigService,
-        public tickService:TickService
+        public tickService:TickService,
+        public dialogService:DialogService
     ){
         
     }

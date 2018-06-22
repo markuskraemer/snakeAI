@@ -42,10 +42,10 @@ export class StorageService {
         }
     }
 
-    public save (o:IStorable):void {
-        this.delete(o.id);
+    public save (id:string, o:any):void {
+        this.delete(id);
         const list = this.getFileList ();
-        list.push ({id:o.id, o:o, time:new Date().getTime()});
+        list.push ({id:id, o:o, time:new Date().getTime()});
         localStorage.setItem(this.key, JSON.stringify(list));
         this.isDirty = true;
 

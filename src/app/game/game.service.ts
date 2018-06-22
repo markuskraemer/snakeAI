@@ -23,7 +23,7 @@ export class GameService {
     public height:number;
     public eatenFoodCount:number;
     public snake:AISnake;
-    public bestTime:number = 0;
+    public bestTicks:number = 0;
     public bestLength:number = 0;
     public bestSnake:AISnake;
 
@@ -73,9 +73,17 @@ export class GameService {
             this.tick ();
         })
 
+       
+        const best:any = this.storageService.load('best');
+        if(best){
+            this.bestLength = best.bodyParts.length;
+            this.bestTicks = best.ticks;
+        }
+
     }
 
     public snakeDead ():void {
+        this.storageService.save('last', this.snake);
         this.stopGame ();
     }
 
@@ -85,7 +93,41 @@ export class GameService {
         setTimeout (() => this.startGame (), 1000);
     }
 
+    private checkBestSnake ():void {
+        if(!this.snake.killedBecauseOfCircularMotion){
+            let grade:number = 0;
+            if(this.snake.ticks >= this.bestTicks){
+                this.bestTicks = this.snake.ticks;
+                grade ++;
+            }
+            if(this.snake.bodyParts.length >= this.bestLength){
+                this.bestLength = this.snake.bodyParts.length;
+                grade ++;
+            }
+
+            if(grade == 2){
+                this.bestSnake = this.snake;
+                this.storageService.save ('best', this.bestSnake);
+            }
+        }
+    }
+
     public startGame () {
+
+        if(this.snake) {
+            this.checkBestSnake ();
+            this.snake.destroy ();
+        }
+
+        const snake:AISnake = this.bestSnake && Math.random () > .5 ? this.bestSnake.clone () : new AISnake ();
+        this.startGameWithSnake (snake);
+    } 
+
+    public startGameWithSnake (snake:AISnake):void {
+        this.snake = snake;
+        this.snake.setHeadPosition (new XY (2, Math.floor(this.height / 2)));
+        this.snake.foodNeuronsEnabled = this._foodNeuronsEnabled;
+        this.snake.bodyNeuronsEnabled = this._bodyNeuronsEnabled;
 
         this.eatenFoodCount = 0;
         this._secs = 0;
@@ -93,23 +135,11 @@ export class GameService {
         clearInterval (this._timeInterval);
         this._timeInterval = setInterval ( () => this._secs += 1000, 1000);
 
-        if(this.snake){
-
-            if(this.snake.ticks >= this.bestLength){
-                this.bestLength = this.snake.ticks;
-                this.bestSnake = this.snake;
-            }
-            this.snake.destroy ();
-        }
-
-        this.snake = this.bestSnake && Math.random () > .5 ? this.bestSnake.clone () : new AISnake ();
-        this.snake.setHeadPosition (new XY (2, Math.floor(this.height / 2)));
-        this.snake.foodNeuronsEnabled = this._foodNeuronsEnabled;
-        this.snake.bodyNeuronsEnabled = this._bodyNeuronsEnabled;
-
         this.determineFoodPos ();
         this._gameBusy = true;
-    } 
+        this.tickService.tick.emit ();
+        this.tickService.emitDraw ();
+    }
 
     public eatFood ():void {
         ++this.eatenFoodCount;

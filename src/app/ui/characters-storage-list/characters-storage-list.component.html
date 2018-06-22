@@ -1,0 +1,14 @@
+<div #dialog title="Saved Creatures">
+    <div *ngIf="items.length>0">
+        <div *ngFor="let item of items" class="item">
+            <span class="info">{{item.id}} : {{item.time | date:'dd:hh:mm:ss' }} : segments:{{item.o.bodyParts.length}} | ticks:{{item.o.ticks}} </span>
+            
+             <app-character-preview class="preview" [character]="getCharacter(item.o)"></app-character-preview>
+            
+            <input type="button" value="load" (click)="handleLoadClick(item.o)">
+        </div>
+    </div>
+    <div *ngIf="items.length==0">
+        Nothing to show.
+    </div>
+</div>

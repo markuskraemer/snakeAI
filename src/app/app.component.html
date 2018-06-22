@@ -6,8 +6,11 @@ Ticks:{{tickService.ticks}} | Time:{{ tickService.ticks | date:'mm:ss' }}<br>
 Enable Foodneurons: {{gameService.snake.foodNeuronsEnabled}}<br>
 <input type="checkbox" [checked]="gameService.bodyNeuronsEnabled" (change)="gameService.bodyNeuronsEnabled=!gameService.bodyNeuronsEnabled">
 Enable Bodyneurons: {{gameService.snake.bodyNeuronsEnabled}}<br>
-
-Food: {{gameService.eatenFoodCount}} | Length:{{gameService.snake.bodyParts.length}} | Time:{{gameService.time | date:'mm:ss'}} | bestLength: {{gameService.bestLength }}<br>
+<br>
+Ticks: {{gameService.snake.ticks}} | Length:{{gameService.snake.bodyParts.length}} | bestTicks: {{gameService.bestTicks }} | bestLength: {{gameService.bestLength }}<br>
+<br> 
+<input type="button" value="load..." (click)="dialogService.openStorageList()">
+<br>
 <app-game-bg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"></app-game-bg>
 <app-game-fg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"
      [snake]="gameService.snake" [foodPos]="gameService.foodPos"></app-game-fg>
@@ -15,3 +18,4 @@ Food: {{gameService.eatenFoodCount}} | Length:{{gameService.snake.bodyParts.leng
 <div class="ui">
     <app-neuralNetwork [network]="gameService.snake?gameService.snake.brain:null"></app-neuralNetwork>
 </div>
+<app-dialogs></app-dialogs>

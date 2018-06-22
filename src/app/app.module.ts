@@ -1,3 +1,7 @@
+import { CharacterPreviewComponent } from './ui/character-preview/character-preview.component';
+import { CharactersStorageListComponent } from './ui/characters-storage-list/characters-storage-list.component';
+import { DialogService } from './ui/dialogs/dialog.service';
+import { DialogsComponent } from './ui/dialogs/dialogs.component';
 import { NeuralNetworkComponent } from './components/neuralNetwork/neuralNetwork.component';
 import { GameForegroundComponent } from './components/game-fg/game-fg.component';
 import { StorageService } from './storage/storage.service';
@@ -18,7 +22,10 @@ import { AppComponent } from './app.component';
     AppComponent,
     GameBackgroudComponent,
     GameForegroundComponent,
-    NeuralNetworkComponent
+    NeuralNetworkComponent,
+    DialogsComponent,
+    CharactersStorageListComponent,
+    CharacterPreviewComponent
   ],
   imports: [
     BrowserModule
@@ -28,7 +35,8 @@ import { AppComponent } from './app.component';
       KeyboardService,
       TickService,
       ConfigService,
-      StorageService
+      StorageService,
+      DialogService
   ],
   bootstrap: [AppComponent]
 })
