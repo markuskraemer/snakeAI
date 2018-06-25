@@ -68,18 +68,23 @@ export class NeuralNetwork {
 
     private createNeurons (args){
         this._layers = [];
+        let layersIndex:number = 0;
         for(let i:number = 0; i < args.length; ++i){
-            this._layers[i] = [];
+            
+            if(args[i] <= 0)
+                continue;
+
+            this._layers[layersIndex] = [];
             for(let j:number = 0; j < args[i]; ++j){
                 if(i == 0){
-                    this._layers[i][j] = new InputNeuron ('input_' + j);
+                    this._layers[layersIndex][j] = new InputNeuron ('input_' + j);
                 }else if(i == args.length-1) {
-                    this._layers[i][j] = new WorkingNeuron ('output_' + j);
+                    this._layers[layersIndex][j] = new WorkingNeuron ('output_' + j);
                 }else{
-                    this._layers[i][j] = new WorkingNeuron ('hidden_' + i + '_' + j);                    
+                    this._layers[layersIndex][j] = new WorkingNeuron ('hidden_' + layersIndex + '_' + j);                    
                 }
-
             }
+            layersIndex ++;
         }
     }
 
@@ -180,7 +185,7 @@ export class NeuralNetwork {
 
 
     public randomizeAnyConnection (f:number):void {
-        const layerIndex:number = 1 + Math.floor (Math.random () * (this._layers.length-1));
+        const layerIndex:number = this._layers.length - 1; //1 + Math.floor (Math.random () * (this._layers.length-1));
         const layer:WorkingNeuron[] = <WorkingNeuron[]> this._layers[layerIndex];
 
         this.randomizeAnyConnectionLayer (layer, f);

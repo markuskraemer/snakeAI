@@ -12,6 +12,7 @@ export class ConfigService {
     public readonly width:number = 15;
     public readonly height:number = 15;
     public readonly tileSize:number = 25;
-    public readonly fps:number = 10;
+    public readonly fps:number = 20;
     public readonly snakeStartLength:number = 3;
+    public readonly hiddenNeurons:number = 4;
 }

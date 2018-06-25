@@ -46,7 +46,7 @@ export class NeuralNetworkComponent implements OnInit {
 
     ngOnInit() {
         this.determineContext ();
-        this.tickService.tick.subscribe ( () => this.draw ());
+        this.tickService.draw.subscribe ( () => this.draw ());
         this.draw ();
     }
 

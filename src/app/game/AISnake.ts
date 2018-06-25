@@ -25,11 +25,15 @@ export class AISnake extends Snake {
 
     public brain:NeuralNetwork;
     public killedBecauseOfCircularMotion:boolean;
+    private _borderNeuronsEnabled:boolean = false;
     private _foodNeuronsEnabled:boolean = true;
     private _bodyNeuronsEnabled:boolean = true;
 
     public set bodyNeuronsEnabled (value:boolean){
-        this._bodyNeuronsEnabled = value;
+        if(this._bodyNeuronsEnabled != value){
+            this._bodyNeuronsEnabled = value;
+            this.updateInput ();
+        }
     }
 
     public get bodyNeuronsEnabled ():boolean{
@@ -37,25 +41,48 @@ export class AISnake extends Snake {
     }
 
     public set foodNeuronsEnabled (value:boolean){
-        this._foodNeuronsEnabled = value;
+        if(this._foodNeuronsEnabled != value){
+            this._foodNeuronsEnabled = value;
+            this.updateInput ();
+        }
     }
 
     public get foodNeuronsEnabled ():boolean{
         return this._foodNeuronsEnabled;
     }
 
+    public set borderNeuronsEnabled (value:boolean){
+        if(this._borderNeuronsEnabled != value){
+            this._borderNeuronsEnabled = value;
+            this.updateInput ();
+        }
+    }
+
+    public get borderNeuronsEnabled ():boolean{
+        return this._borderNeuronsEnabled;
+    }
+
     public static fromJSON (json:JSON):AISnake {
-        const snake:AISnake = new AISnake ();
-        //snake.bodyParts.length = json['bodyParts'].length;
+        const snake:AISnake = new AISnake (false);
+        const layers:any[] = json['brain']._layers;
+        if(layers.length == 2){
+            snake.createBrain (0);
+        }else if(layers.length == 3){
+            snake.createBrain (layers[1].length);
+        }
+
+
         snake.brain.copyWeightsFrom (json['brain']);
 
         return snake;
     }
 
-    constructor (){       
+    constructor (selfInit:boolean = true){       
         super ();
-        this.createBrain ();
-        this.synchronizeWeights ();
+        if(selfInit){
+            this.createBrain (Alias.configService.hiddenNeurons);
+            this.synchronizeWeights ();
+        }
     }
 
     public clone ():AISnake {
@@ -71,8 +98,8 @@ export class AISnake extends Snake {
 
     }
 
-    private createBrain ():void {
-        this.brain = new NeuralNetwork (10, 2);
+    private createBrain (hiddenLayerLength:number):void {
+        this.brain = new NeuralNetwork (10, hiddenLayerLength, 2);
         this.brain.inputLayer[0].name = NeuronNames.BorderTop;
         this.brain.inputLayer[1].name = NeuronNames.BorderBottom;
         this.brain.inputLayer[2].name = NeuronNames.BorderRight;
@@ -94,22 +121,42 @@ export class AISnake extends Snake {
 
     }
 
-    private synchronizeWeights ():void {
-        this.brain.setConnectionWeight (1, 1, 1, -this.brain.getConnectionWeight(1, 1, 0));
-        this.brain.setConnectionWeight (1, 1, 3, -this.brain.getConnectionWeight(1, 1, 2));
+    protected synchronizeWeights ():void {
 
-        this.brain.setConnectionWeight (1, 0, 1, -this.brain.getConnectionWeight(1, 0, 0));
-        this.brain.setConnectionWeight (1, 0, 3, -this.brain.getConnectionWeight(1, 0, 2));
+        const weightBorderHor:number = this.brain.getConnectionWeight(1, 0, 0);
+        const weightBorderVert:number = this.brain.getConnectionWeight(1, 0, 2);
 
-        this.brain.setConnectionWeight (1, 1, 5, this.brain.getConnectionWeight(1, 0, 4));
+        this.brain.setConnectionWeight (1, 0, 0, weightBorderHor);
+        this.brain.setConnectionWeight (1, 0, 1, weightBorderHor);
+        this.brain.setConnectionWeight (1, 0, 2, weightBorderVert);
+        this.brain.setConnectionWeight (1, 0, 3,-weightBorderVert);
 
-        this.brain.setConnectionWeight (1, 0, 5, this.brain.getConnectionWeight(1, 1, 4));
+        this.brain.setConnectionWeight (1, 1, 0, weightBorderVert);
+        this.brain.setConnectionWeight (1, 1, 1, weightBorderVert);
+        this.brain.setConnectionWeight (1, 1, 2, weightBorderHor);
+        this.brain.setConnectionWeight (1, 1, 3, weightBorderHor);
 
-        this.brain.setConnectionWeight (1, 1, 7, -this.brain.getConnectionWeight(1, 1, 6));
-        this.brain.setConnectionWeight (1, 1, 9, -this.brain.getConnectionWeight(1, 1, 8));
+        const weightFoodHor:number = this.brain.getConnectionWeight(1, 0, 4);
+        const weightFoodVert:number = 1 - weightFoodHor;
 
-        this.brain.setConnectionWeight (1, 0, 7, -this.brain.getConnectionWeight(1, 0, 6));
-        this.brain.setConnectionWeight (1, 0, 9, -this.brain.getConnectionWeight(1, 0, 8));
+        this.brain.setConnectionWeight (1, 0, 4, weightFoodHor);
+        this.brain.setConnectionWeight (1, 1, 4, weightFoodVert);
+        this.brain.setConnectionWeight (1, 0, 5, weightFoodVert);
+        this.brain.setConnectionWeight (1, 1, 5, weightFoodHor);
+
+        const weightBodyHor:number = this.brain.getConnectionWeight(1, 0, 6);
+        const weightBodyVert:number = 1 - weightBodyHor;
+
+        this.brain.setConnectionWeight (1, 0, 6, weightBodyHor);
+        this.brain.setConnectionWeight (1, 0, 7, weightBodyHor);
+        this.brain.setConnectionWeight (1, 0, 8, weightBodyVert);
+        this.brain.setConnectionWeight (1, 0, 9, weightBodyVert);
+
+        this.brain.setConnectionWeight (1, 1, 6, weightBodyVert);
+        this.brain.setConnectionWeight (1, 1, 7, weightBodyVert);
+        this.brain.setConnectionWeight (1, 1, 8, weightBodyHor);
+        this.brain.setConnectionWeight (1, 1, 9, weightBodyHor);
+
     }
 
     public tick ():void {
@@ -169,25 +216,44 @@ export class AISnake extends Snake {
 
     private updateInput ():void {
         const headPos:XY = this.bodyParts[0];
+
+        if(headPos.x == 0|| headPos.x == Alias.gameService.width-1){
+            if(headPos.y == 0 || headPos.y == Alias.gameService.height-1){
+               // debugger;
+            }
+        }else if(headPos.y == 0){
+            if(headPos.x == 0 || headPos.x == Alias.gameService.width-1){
+                // debugger;
+            }
+        }
+
+
         const foodPos:XY = Alias.gameService.foodPos;
 
         // border
-        const distBorderT:number = headPos.y + 1;
-        const distBorderB:number = Alias.gameService.height - headPos.y;
-        const distBorderR:number = Alias.gameService.width - headPos.x;
-        const distBorderL:number = headPos.x + 1;
+        if(this._borderNeuronsEnabled){
 
-        this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = MathUtils.sigmoid(distBorderT);
-        this.brain.getInputNeuronFromName (NeuronNames.BorderBottom).input = MathUtils.sigmoid(distBorderB);
-        this.brain.getInputNeuronFromName (NeuronNames.BorderRight).input = MathUtils.sigmoid(distBorderR);
-        this.brain.getInputNeuronFromName (NeuronNames.BorderLeft).input = MathUtils.sigmoid(distBorderL);
+            const distBorderT:number = - headPos.y - 1;
+            const distBorderB:number = Alias.gameService.height - headPos.y;
+            const distBorderR:number = Alias.gameService.width - headPos.x;
+            const distBorderL:number = - headPos.x - 1;
 
+            this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = MathUtils.sigmoidNegPos(distBorderT);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderBottom).input = MathUtils.sigmoidNegPos(distBorderB);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderRight).input = MathUtils.sigmoidNegPos(distBorderR);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderLeft).input = MathUtils.sigmoidNegPos(distBorderL);
+        }else{
+            this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BorderBottom).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BorderRight).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BorderLeft).input = 0;
+        }
 
         // food
         if(this._foodNeuronsEnabled){
 
-            const distFoodVertical:number = headPos.y - foodPos.y;
-            const distFoodHorizontal:number = headPos.x - foodPos.x;
+            const distFoodVertical:number = foodPos.y - headPos.y;
+            const distFoodHorizontal:number = foodPos.x - headPos.x;
 
             this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = MathUtils.sigmoidNegPos(distFoodVertical);
             this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = MathUtils.sigmoidNegPos(distFoodHorizontal);
@@ -197,7 +263,6 @@ export class AISnake extends Snake {
         }
 
         // body 
-
         if(this._bodyNeuronsEnabled){
 
             const distBodyT:number = this.getClosestDistBodyPartVertical (headPos, true);
@@ -206,10 +271,10 @@ export class AISnake extends Snake {
             const distBodyL:number = this.getClosestDistBodyPartHorizontal (headPos, true);
 
             
-            this.brain.getInputNeuronFromName (NeuronNames.BodyTop).input = MathUtils.sigmoid(distBodyT);
-            this.brain.getInputNeuronFromName (NeuronNames.BodyBottom).input = MathUtils.sigmoid(distBodyB);
-            this.brain.getInputNeuronFromName (NeuronNames.BodyRight).input = MathUtils.sigmoid(distBodyR);
-            this.brain.getInputNeuronFromName (NeuronNames.BodyLeft).input = MathUtils.sigmoid(distBodyL);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyTop).input = MathUtils.sigmoidNegPos(distBodyT);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyBottom).input = MathUtils.sigmoidNegPos(distBodyB);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyRight).input = MathUtils.sigmoidNegPos(distBodyR);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyLeft).input = MathUtils.sigmoidNegPos(distBodyL);
         
         }else{
             this.brain.getInputNeuronFromName (NeuronNames.BodyTop).input = 0;
@@ -221,11 +286,11 @@ export class AISnake extends Snake {
 
     private getClosestDistBodyPartHorizontal (headPos:XY, isLeft:boolean):number {
         const bodyPartsOnRow:XY[] = this.getBodyPartsOnRow (headPos.y);
-        let closestDist:number = Alias.gameService.width + 2;
+        let closestDist:number = isLeft ? - Alias.gameService.width - 2 : Alias.gameService.width + 2;
         for(let bodyPart of bodyPartsOnRow){
             if((isLeft && (bodyPart.x < headPos.x)) || (!isLeft && (bodyPart.x > headPos.x))){
-                if(Math.abs(headPos.x - bodyPart.x) < closestDist){
-                    closestDist = Math.abs(headPos.x - bodyPart.x);
+                if(Math.abs(bodyPart.x - headPos.x) < Math.abs(closestDist)){
+                    closestDist = bodyPart.x - headPos.x;
                 }
             }
         }
@@ -234,11 +299,11 @@ export class AISnake extends Snake {
 
     private getClosestDistBodyPartVertical (headPos:XY, isTop:boolean):number {
         const bodyPartsOnCol:XY[] = this.getBodyPartsOnCol (headPos.x);
-        let closestDist:number = Alias.gameService.height + 2;
+        let closestDist:number = isTop ? - Alias.gameService.height - 2 : Alias.gameService.height + 2;
         for(let bodyPart of bodyPartsOnCol){
             if((isTop && (bodyPart.y < headPos.y)) || (!isTop && (bodyPart.y > headPos.y))) {
-                if(Math.abs(headPos.y - bodyPart.y) < closestDist){
-                    closestDist = Math.abs(headPos.y - bodyPart.y);
+                if(Math.abs(bodyPart.y - headPos.y) < Math.abs(closestDist)){
+                    closestDist = bodyPart.y - headPos.y;
                 }
             }
         }

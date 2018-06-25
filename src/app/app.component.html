@@ -2,14 +2,18 @@
 <input type="button" value="Snake Info" (click)="getInfo ()"><br>
 Ticks:{{tickService.ticks}} | Time:{{ tickService.ticks | date:'mm:ss' }}<br>
 <input type="button" value="{{tickService.isRunning?'Stop':'Start'}}" (click)="tickService.isRunning?tickService.stop():tickService.start()"><br>
+<input type="checkbox" [checked]="gameService.borderNeuronsEnabled" (change)="gameService.borderNeuronsEnabled=!gameService.borderNeuronsEnabled">
+Enable Borderneurons: {{gameService.snake.borderNeuronsEnabled}}<br>
 <input type="checkbox" [checked]="gameService.foodNeuronsEnabled" (change)="gameService.foodNeuronsEnabled=!gameService.foodNeuronsEnabled">
 Enable Foodneurons: {{gameService.snake.foodNeuronsEnabled}}<br>
 <input type="checkbox" [checked]="gameService.bodyNeuronsEnabled" (change)="gameService.bodyNeuronsEnabled=!gameService.bodyNeuronsEnabled">
 Enable Bodyneurons: {{gameService.snake.bodyNeuronsEnabled}}<br>
 <br>
-Ticks: {{gameService.snake.ticks}} | Length:{{gameService.snake.bodyParts.length}} | bestTicks: {{gameService.bestTicks }} | bestLength: {{gameService.bestLength }}<br>
+Snakes: {{gameService.snakeCount}} | Ticks: {{gameService.snake.ticks}} | Length:{{gameService.snake.bodyParts.length}} | bestTicks: {{gameService.bestTicks }} | bestLength: {{gameService.bestLength }}<br>
 <br> 
+<input type="button" value="save current" (click)="gameService.saveCurrentSnake()">
 <input type="button" value="load..." (click)="dialogService.openStorageList()">
+<br>
 <br>
 <app-game-bg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"></app-game-bg>
 <app-game-fg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"

@@ -1,3 +1,4 @@
+import { CustomSnake } from './CustomSnake';
 import { AISnake } from './AISnake';
 import { PlayerSnake } from './PlayerSnake';
 import { XY } from './../model/XY';
@@ -16,8 +17,9 @@ export class GameService {
     private _foodPos:XY = new XY ();
     private _secs:number;
     private _timeInterval:any;
-    private _foodNeuronsEnabled:boolean = true;
-    private _bodyNeuronsEnabled:boolean = true;
+    private _borderNeuronsEnabled:boolean = false;
+    private _foodNeuronsEnabled:boolean = false;
+    private _bodyNeuronsEnabled:boolean = false;
 
     public width:number;
     public height:number;
@@ -26,6 +28,7 @@ export class GameService {
     public bestTicks:number = 0;
     public bestLength:number = 0;
     public bestSnake:AISnake;
+    public snakeCount:number = 0;
 
     public get foodPos ():XY {
         return this._foodPos;
@@ -42,6 +45,7 @@ export class GameService {
      public set bodyNeuronsEnabled (value:boolean){
         this._bodyNeuronsEnabled = value;
         this.snake.bodyNeuronsEnabled = this._bodyNeuronsEnabled;
+        this.tickService.emitDraw ();
     }
 
     public get bodyNeuronsEnabled ():boolean{
@@ -51,12 +55,23 @@ export class GameService {
     public set foodNeuronsEnabled (value:boolean){
         this._foodNeuronsEnabled = value;
         this.snake.foodNeuronsEnabled = this._foodNeuronsEnabled;
-
+        this.tickService.emitDraw ();
     }
 
     public get foodNeuronsEnabled ():boolean{
         return this._foodNeuronsEnabled;
     }
+
+    public set borderNeuronsEnabled (value:boolean){
+        this._borderNeuronsEnabled = value;
+        this.snake.borderNeuronsEnabled = this._borderNeuronsEnabled;
+        this.tickService.emitDraw ();
+    }
+
+    public get borderNeuronsEnabled ():boolean{
+        return this._borderNeuronsEnabled;
+    }
+
 
     constructor(
         private keyboardService:KeyboardService,
@@ -82,6 +97,10 @@ export class GameService {
 
     }
 
+    public saveCurrentSnake ():void {
+        this.storageService.save (this.snake.id, this.snake);
+    }
+
     public snakeDead ():void {
         this.storageService.save('last', this.snake);
         this.stopGame ();
@@ -90,7 +109,7 @@ export class GameService {
     public stopGame ():void {
         this._gameBusy = false;
         clearInterval (this._timeInterval);
-        setTimeout (() => this.startGame (), 1000);
+        setTimeout (() => this.startGame (), 500);
     }
 
     private checkBestSnake ():void {
@@ -105,7 +124,7 @@ export class GameService {
                 grade ++;
             }
 
-            if(grade == 2){
+            if(grade == 2 || (grade == 1 && this.bestSnake == undefined)) {
                 this.bestSnake = this.snake;
                 this.storageService.save ('best', this.bestSnake);
             }
@@ -113,19 +132,21 @@ export class GameService {
     }
 
     public startGame () {
-
+       
         if(this.snake) {
             this.checkBestSnake ();
             this.snake.destroy ();
         }
 
-        const snake:AISnake = this.bestSnake && Math.random () > .5 ? this.bestSnake.clone () : new AISnake ();
+        const snake:AISnake = this.bestSnake && Math.random () > .5 ? this.bestSnake.clone () : Math.random () > .75 ? new AISnake () : new CustomSnake ();
         this.startGameWithSnake (snake);
     } 
 
     public startGameWithSnake (snake:AISnake):void {
+        this.snakeCount ++;
         this.snake = snake;
         this.snake.setHeadPosition (new XY (2, Math.floor(this.height / 2)));
+        this.snake.borderNeuronsEnabled = this._borderNeuronsEnabled;
         this.snake.foodNeuronsEnabled = this._foodNeuronsEnabled;
         this.snake.bodyNeuronsEnabled = this._bodyNeuronsEnabled;
 
