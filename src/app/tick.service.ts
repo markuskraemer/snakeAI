@@ -8,6 +8,7 @@ export class TickService {
     private intervalId:any;
     private _isRunning:boolean;
     private _speed:number = 60;
+    public loopsPerTick:number = 2;
     public tick:EventEmitter<number> = new EventEmitter ();
     public draw:EventEmitter<null> = new EventEmitter ();
 
@@ -38,7 +39,7 @@ export class TickService {
         private configService:ConfigService
     ) {
         this._speed = configService.fps;
-        this.start ();
+       // this.start ();
      }
 
     private clearInterval ():void {
@@ -49,8 +50,11 @@ export class TickService {
         this._isRunning = true;
         this.clearInterval ();
         this.intervalId = setInterval ( () => {
-            this._ticks ++;
-            this.tick.emit (1);
+
+            for(let i:number = 0; i < this.loopsPerTick; ++i){
+                this._ticks ++;
+                this.tick.emit (1);
+            }
             this.emitDraw ();
         }, this.updateTime);
     }

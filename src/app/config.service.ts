@@ -14,5 +14,6 @@ export class ConfigService {
     public readonly tileSize:number = 25;
     public readonly fps:number = 20;
     public readonly snakeStartLength:number = 3;
-    public readonly hiddenNeurons:number = 4;
+    public readonly hiddenNeurons:number = 8;
+    public readonly bestStoredSnakesCount:number = 4;
 }

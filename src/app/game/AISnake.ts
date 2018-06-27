@@ -58,19 +58,27 @@ export class AISnake extends Snake {
         }
     }
 
-    public get borderNeuronsEnabled ():boolean{
+    public get borderNeuronsEnabled ():boolean {
         return this._borderNeuronsEnabled;
     }
 
     public static fromJSON (json:JSON):AISnake {
         const snake:AISnake = new AISnake (false);
+        const jsonBodyParts:{x:number, y:number}[] = json['bodyParts']; 
+        
+        jsonBodyParts.forEach ((value:{x:number, y:number}, index:number) => {
+            snake.bodyParts[index] = new XY (value.x, value.y);
+        });
+
+        snake.ticks = json['ticks'];
+        snake.id = json['id'];
+
         const layers:any[] = json['brain']._layers;
         if(layers.length == 2){
             snake.createBrain (0);
         }else if(layers.length == 3){
             snake.createBrain (layers[1].length);
         }
-
 
         snake.brain.copyWeightsFrom (json['brain']);
 
@@ -85,11 +93,19 @@ export class AISnake extends Snake {
         }
     }
 
-    public clone ():AISnake {
+    public setToGameStartValues ():void {
+        this.bodyParts.length = Alias.configService.snakeStartLength;
+        this.ticks = 0;
+        this.direction = Direction.Right;
+        this.noFoodTicks = 0;
+    }
+
+    public getMutatedClone ():AISnake {
         const myClone:AISnake = new AISnake ();
         myClone.bodyParts.length = Alias.configService.snakeStartLength;
+        myClone.ticks = 0;
         myClone.brain.copyWeightsFrom (this.brain);
-        myClone.brain.randomizeAnyConnection (.1);
+        myClone.brain.randomizeAnyConnection (.2);
         myClone.synchronizeWeights ();
         myClone.color = this.color - 0x111122;
         if(myClone.color < 0)
@@ -126,37 +142,48 @@ export class AISnake extends Snake {
         const weightBorderHor:number = this.brain.getConnectionWeight(1, 0, 0);
         const weightBorderVert:number = this.brain.getConnectionWeight(1, 0, 2);
 
-        this.brain.setConnectionWeight (1, 0, 0, weightBorderHor);
-        this.brain.setConnectionWeight (1, 0, 1, weightBorderHor);
-        this.brain.setConnectionWeight (1, 0, 2, weightBorderVert);
-        this.brain.setConnectionWeight (1, 0, 3,-weightBorderVert);
-
-        this.brain.setConnectionWeight (1, 1, 0, weightBorderVert);
-        this.brain.setConnectionWeight (1, 1, 1, weightBorderVert);
-        this.brain.setConnectionWeight (1, 1, 2, weightBorderHor);
-        this.brain.setConnectionWeight (1, 1, 3, weightBorderHor);
+        for(let i:number = 0; i < this.brain.hiddenLayer.length; ++i){
+            if(i % 2 == 0){
+                this.brain.setConnectionWeight (1, i, 0, weightBorderHor);
+                this.brain.setConnectionWeight (1, i, 1, weightBorderHor);
+                this.brain.setConnectionWeight (1, i, 2, weightBorderVert);
+                this.brain.setConnectionWeight (1, i, 3, weightBorderVert);
+            }else{
+                this.brain.setConnectionWeight (1, i, 0, weightBorderVert);
+                this.brain.setConnectionWeight (1, i, 1, weightBorderVert);
+                this.brain.setConnectionWeight (1, i, 2, weightBorderHor);
+                this.brain.setConnectionWeight (1, i, 3, weightBorderHor);
+            }
+        }
 
         const weightFoodHor:number = this.brain.getConnectionWeight(1, 0, 4);
         const weightFoodVert:number = 1 - weightFoodHor;
-
-        this.brain.setConnectionWeight (1, 0, 4, weightFoodHor);
-        this.brain.setConnectionWeight (1, 1, 4, weightFoodVert);
-        this.brain.setConnectionWeight (1, 0, 5, weightFoodVert);
-        this.brain.setConnectionWeight (1, 1, 5, weightFoodHor);
+        for(let i:number = 0; i < this.brain.hiddenLayer.length; ++i){
+            if(i % 2 == 0){
+                this.brain.setConnectionWeight (1, i, 4, weightFoodHor);
+                this.brain.setConnectionWeight (1, i, 5, weightFoodVert);
+           }else{
+                this.brain.setConnectionWeight (1, i, 4, weightFoodVert);
+                this.brain.setConnectionWeight (1, i, 5, weightFoodHor);
+           }
+        }
 
         const weightBodyHor:number = this.brain.getConnectionWeight(1, 0, 6);
-        const weightBodyVert:number = 1 - weightBodyHor;
+        const weightBodyVert:number = this.brain.getConnectionWeight(1, 0, 8);
 
-        this.brain.setConnectionWeight (1, 0, 6, weightBodyHor);
-        this.brain.setConnectionWeight (1, 0, 7, weightBodyHor);
-        this.brain.setConnectionWeight (1, 0, 8, weightBodyVert);
-        this.brain.setConnectionWeight (1, 0, 9, weightBodyVert);
-
-        this.brain.setConnectionWeight (1, 1, 6, weightBodyVert);
-        this.brain.setConnectionWeight (1, 1, 7, weightBodyVert);
-        this.brain.setConnectionWeight (1, 1, 8, weightBodyHor);
-        this.brain.setConnectionWeight (1, 1, 9, weightBodyHor);
-
+        for(let i:number = 0; i < this.brain.hiddenLayer.length; ++i){
+            if(i % 2 == 0){
+                this.brain.setConnectionWeight (1, i, 6, weightBodyHor);
+                this.brain.setConnectionWeight (1, i, 7, weightBodyHor);
+                this.brain.setConnectionWeight (1, i, 8, weightBodyVert);
+                this.brain.setConnectionWeight (1, i, 9, weightBodyVert);
+            }else{
+                this.brain.setConnectionWeight (1, i, 6, weightBodyVert);
+                this.brain.setConnectionWeight (1, i, 7, weightBodyVert);
+                this.brain.setConnectionWeight (1, i, 8, weightBodyHor);
+                this.brain.setConnectionWeight (1, i, 9, weightBodyHor);                
+            }
+        }
     }
 
     public tick ():void {

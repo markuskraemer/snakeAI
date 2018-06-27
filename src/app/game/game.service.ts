@@ -1,3 +1,4 @@
+import { IStorageDescribtion } from './../storage/IStorageDescribtion';
 import { CustomSnake } from './CustomSnake';
 import { AISnake } from './AISnake';
 import { PlayerSnake } from './PlayerSnake';
@@ -17,18 +18,18 @@ export class GameService {
     private _foodPos:XY = new XY ();
     private _secs:number;
     private _timeInterval:any;
-    private _borderNeuronsEnabled:boolean = false;
-    private _foodNeuronsEnabled:boolean = false;
-    private _bodyNeuronsEnabled:boolean = false;
+    private _borderNeuronsEnabled:boolean = true;
+    private _foodNeuronsEnabled:boolean = true;
+    private _bodyNeuronsEnabled:boolean = true;
 
     public width:number;
     public height:number;
     public eatenFoodCount:number;
     public snake:AISnake;
-    public bestTicks:number = 0;
-    public bestLength:number = 0;
     public bestSnake:AISnake;
     public snakeCount:number = 0;
+
+    public bestPool:AISnake[] = [];
 
     public get foodPos ():XY {
         return this._foodPos;
@@ -82,17 +83,53 @@ export class GameService {
         Alias.gameService = this;
         this.width = configService.width;
         this.height = configService.height;
+        this.readBestStoredSnakes ();
+
         this.startGame ();
 
         this.tickService.tick.subscribe (()=>{
             this.tick ();
         })
 
-       
-        const best:any = this.storageService.load('best');
-        if(best){
-            this.bestLength = best.bodyParts.length;
-            this.bestTicks = best.ticks;
+    }
+
+    private readBestStoredSnakes ():void {
+        // const best:any = this.storageService.load('best');
+        const fileList:IStorageDescribtion[] = this.storageService.getFileList ();
+        for(let item of fileList){
+            let instance:AISnake = AISnake.fromJSON (item.o);
+            console.log("item from filelist: " + instance);
+            this.bestPool.push(instance);
+        }
+        this.trimBestPool ();
+
+        if(this.bestPool.length > 0) {
+            this.bestSnake = this.bestPool[0];
+        }
+    }
+
+    private trimBestPool ():void {
+
+        this.bestPool.sort ((a:AISnake, b:AISnake) => {
+            
+            if(a.bodyParts.length > b.bodyParts.length){
+                return -1;
+            }else if(a.bodyParts.length == b.bodyParts.length){
+                
+                if(a.ticks > b.ticks){
+                    return -1;
+                }else{
+                    return 1;
+                }                    
+
+            }else{
+                return 1
+            }
+        });
+        
+        const deleted:AISnake[] = this.bestPool.splice(this.configService.bestStoredSnakesCount);
+        for(let snake of deleted){
+            this.storageService.delete ('best_' + snake.id);
         }
 
     }
@@ -102,33 +139,50 @@ export class GameService {
     }
 
     public snakeDead ():void {
-        this.storageService.save('last', this.snake);
         this.stopGame ();
     }
 
     public stopGame ():void {
         this._gameBusy = false;
         clearInterval (this._timeInterval);
-        setTimeout (() => this.startGame (), 500);
+        setTimeout (() => this.startGame (), 250 / (this.tickService.speed / 10));
     }
 
     private checkBestSnake ():void {
         if(!this.snake.killedBecauseOfCircularMotion){
             let grade:number = 0;
-            if(this.snake.ticks >= this.bestTicks){
-                this.bestTicks = this.snake.ticks;
+            
+            if(this.bestSnake == undefined){
+                this.bestSnake = this.snake;
+            }
+
+            if(this.snake.ticks >= this.bestSnake.ticks * .75) {
                 grade ++;
             }
-            if(this.snake.bodyParts.length >= this.bestLength){
-                this.bestLength = this.snake.bodyParts.length;
+            if(this.snake.bodyParts.length >= this.bestSnake.bodyParts.length * .75){
                 grade ++;
             }
 
-            if(grade == 2 || (grade == 1 && this.bestSnake == undefined)) {
+            if(grade == 2) {
                 this.bestSnake = this.snake;
-                this.storageService.save ('best', this.bestSnake);
             }
+
+            if(grade > 0){
+                this.bestPool.push(this.snake);
+                this.storageService.save ('best_' + this.snake.id, this.snake);
+                this.trimBestPool ();
+            }
+
         }
+    }
+
+
+    private getSnakeCloneFromBestPool ():AISnake {
+        if(this.bestPool.length == 0){
+            return new AISnake ();
+        }
+        const idx:number = Math.floor(Math.random () * this.bestPool.length);
+        return this.bestPool[idx].getMutatedClone ();
     }
 
     public startGame () {
@@ -138,13 +192,18 @@ export class GameService {
             this.snake.destroy ();
         }
 
-        const snake:AISnake = this.bestSnake && Math.random () > .5 ? this.bestSnake.clone () : Math.random () > .75 ? new AISnake () : new CustomSnake ();
+        const snake:AISnake = this.bestSnake && Math.random () > .25 ? this.getSnakeCloneFromBestPool () : Math.random () > .9 ? new AISnake () : new CustomSnake ();
         this.startGameWithSnake (snake);
     } 
 
     public startGameWithSnake (snake:AISnake):void {
         this.snakeCount ++;
         this.snake = snake;
+        
+        if(this.bestSnake == undefined)
+            this.bestSnake = this.snake;
+
+        this.snake.setToGameStartValues ();
         this.snake.setHeadPosition (new XY (2, Math.floor(this.height / 2)));
         this.snake.borderNeuronsEnabled = this._borderNeuronsEnabled;
         this.snake.foodNeuronsEnabled = this._foodNeuronsEnabled;

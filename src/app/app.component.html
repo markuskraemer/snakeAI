@@ -9,7 +9,10 @@ Enable Foodneurons: {{gameService.snake.foodNeuronsEnabled}}<br>
 <input type="checkbox" [checked]="gameService.bodyNeuronsEnabled" (change)="gameService.bodyNeuronsEnabled=!gameService.bodyNeuronsEnabled">
 Enable Bodyneurons: {{gameService.snake.bodyNeuronsEnabled}}<br>
 <br>
-Snakes: {{gameService.snakeCount}} | Ticks: {{gameService.snake.ticks}} | Length:{{gameService.snake.bodyParts.length}} | bestTicks: {{gameService.bestTicks }} | bestLength: {{gameService.bestLength }}<br>
+loopsPerTick: <input type="number" [(ngModel)]="tickService.loopsPerTick"><br>
+FPS: <input type="number" [(ngModel)]="tickService.speed"><br>
+Snakes: {{gameService.snakeCount}} | Ticks: {{gameService.snake.ticks}} | Length:{{gameService.snake.bodyParts.length}} 
+| bestLength: {{gameService.bestSnake.bodyParts.length }} | bestTicks: {{gameService.bestSnake.ticks }}<br>
 <br> 
 <input type="button" value="save current" (click)="gameService.saveCurrentSnake()">
 <input type="button" value="load..." (click)="dialogService.openStorageList()">
@@ -23,3 +26,4 @@ Snakes: {{gameService.snakeCount}} | Ticks: {{gameService.snake.ticks}} | Length
     <app-neuralNetwork [network]="gameService.snake?gameService.snake.brain:null"></app-neuralNetwork>
 </div>
 <app-dialogs></app-dialogs>
+<app-connections-info [snake]="gameService.bestSnake"></app-connections-info>

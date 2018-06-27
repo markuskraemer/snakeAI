@@ -6,6 +6,7 @@
              <app-character-preview class="preview" [character]="getCharacter(item.o)"></app-character-preview>
             
             <input type="button" value="load" (click)="handleLoadClick(item.o)">
+            <input type="button" value="delete" (click)="handleDeleteClick(item.id)">
         </div>
     </div>
     <div *ngIf="items.length==0">

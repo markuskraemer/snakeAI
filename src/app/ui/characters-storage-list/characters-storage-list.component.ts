@@ -39,6 +39,10 @@ export class CharactersStorageListComponent implements OnInit {
         this.gameService.startGameWithSnake(this.getCharacter(json));
     }
 
+    public handleDeleteClick (id:string) {
+        console.log("delete: ", id);
+        this.storageService.delete(id);
+    }
 
     public handlePreviewClick (json:JSON) {
        //  this.gameService.inspectedCharacter = this.getCharacter(json);
