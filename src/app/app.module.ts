@@ -1,3 +1,4 @@
+import { GenerationsInfoComponent } from './components/generations-info/generations-info.component';
 import { SimulationService } from './game/simulation.service';
 import { ConnectionsInfoComponent } from './components/connections-info/connections-info.component';
 import { CharacterPreviewComponent } from './ui/character-preview/character-preview.component';
@@ -26,7 +27,8 @@ import { AppComponent } from './app.component';
     DialogsComponent,
     CharactersStorageListComponent,
     CharacterPreviewComponent,
-    ConnectionsInfoComponent
+    ConnectionsInfoComponent,
+    GenerationsInfoComponent
   ],
   imports: [
     BrowserModule,

@@ -1,3 +1,4 @@
+import { IGenerationStatistic } from './../model/IGenerationStatistic';
 import { ConfigService } from './../config.service';
 import { Alias } from './../Alias';
 import { TickService } from './../tick.service';
@@ -16,7 +17,7 @@ export class SimulationService {
     private generationIsFinished:boolean;
 
     public currentGeneration:Generation;
-
+    public statistic:IGenerationStatistic[] = [];
 
     public set autoRunNextGeneration (value:boolean){
         if(this._autoRunNextGeneration != value){
@@ -76,16 +77,24 @@ export class SimulationService {
             this.subscribtion.unsubscribe ();
         }
         
-        const bestSnakes:AISnake[] = this.currentGeneration.getBestSnakes ();
-        const bestSnakesJSON:any[] = [];
-        bestSnakes.forEach((snake:AISnake) => bestSnakesJSON.push(snake.toJSON()));
+        this.updateStatistic ();
+        this.storeBestSnakes ();
 
-        this.storageService.save ('bestPool', bestSnakesJSON);
         if(this.autoRunNextGeneration) {
             clearTimeout(this.timeout);
             this.timeout = setTimeout (()=> this.runNextGeneration (), 500 / (this.tickService.speed/60));
         }
-        
+    }
+
+    private updateStatistic ():void {
+        this.statistic.push({longest:this.currentGeneration.getLongestSnakeLength (), average:this.currentGeneration.getAverageSnakeLength ()});
+    }
+
+    private storeBestSnakes ():void {
+        const bestSnakes:AISnake[] = this.currentGeneration.getBestSnakes ();
+        const bestSnakesJSON:any[] = [];
+        bestSnakes.forEach((snake:AISnake) => bestSnakesJSON.push(snake.toJSON()));
+        this.storageService.save ('bestPool', bestSnakesJSON);
     }
 
 }

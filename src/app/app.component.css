@@ -1,21 +1,25 @@
 :host {
+    display: block;
+}
+
+.main {
     display: flex;
+    width:100%;
+    height: 550px;
+}
+
+.generations-info {
+    width:100%;
+    height:300px;
 }
 
 .ui {
     width:400px;
-    position: relative;
-    top:10px;
-    left:10px;
-    display: inline-block;
-    
 }
 
 .simulation {
-    display: inline-block;
     width:calc(100% - 400px);
     background: black;
-    position: relative;
 }
 
 
@@ -26,7 +30,6 @@
     height:20px;
     background: rgba(50,50,50,.5);
     color:white;
-
 }
 
 .game-view-container {
@@ -63,3 +66,4 @@
     background: rgba(50,50,50,.5);
     color:white;
 }
+

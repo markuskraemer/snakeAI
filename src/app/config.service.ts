@@ -9,7 +9,7 @@ export class ConfigService {
     constructor (){
         Alias.configService = this;
     }
-    public readonly gamesPerGeneration:number = 8;
+    public readonly gamesPerGeneration:number = 48;
 
     public get bestGamesCount ():number {
         return Math.ceil(this.gamesPerGeneration / 12);
@@ -19,7 +19,7 @@ export class ConfigService {
 
     public readonly width:number = 15;
     public readonly height:number = 15;
-    public readonly tileSize:number = 7;
+    public readonly tileSize:number = 6;
     public readonly fps:number = 84;
     public readonly snakeStartLength:number = 3;
     public readonly hiddenNeurons:number = 8;
