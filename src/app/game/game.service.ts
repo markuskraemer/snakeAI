@@ -80,7 +80,6 @@ export class GameService {
         private configService:ConfigService,
         private storageService:StorageService
     ) {
-        Alias.gameService = this;
         this.width = configService.width;
         this.height = configService.height;
         this.readBestStoredSnakes ();
@@ -88,7 +87,7 @@ export class GameService {
         this.startGame ();
 
         this.tickService.tick.subscribe (()=>{
-            this.tick ();
+            this.tick (); 
         })
 
     }

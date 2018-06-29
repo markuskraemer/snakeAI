@@ -2,7 +2,6 @@ import { Direction } from './../../model/Direction.enum';
 import { TickService } from './../../tick.service';
 import { XY } from './../../model/XY';
 import { Snake } from './../../game/Snake';
-import { GameService } from './../../game/game.service';
 import { Component, OnInit, ViewChild, Input, ElementRef, SimpleChanges } from '@angular/core';
 
 @Component({
@@ -37,7 +36,6 @@ export class GameForegroundComponent implements OnInit {
 
     constructor(
         private elementRef:ElementRef,
-        public gameService:GameService,
         private tickSevice:TickService
     ) { 
     }
@@ -54,6 +52,9 @@ export class GameForegroundComponent implements OnInit {
     }
 
     private draw ():void {
+        if(this.snake.isDead){
+            return;
+        }
         let context:CanvasRenderingContext2D = this.canvas.nativeElement.getContext ('2d'); 
         context.clearRect (0, 0, this.canvasWidth, this.canvasHeight);
         

@@ -1,5 +1,7 @@
+import { Alias } from './Alias';
 import { ConfigService } from './config.service';
 import { Injectable, EventEmitter } from '@angular/core';
+
 
 @Injectable()
 export class TickService {
@@ -8,7 +10,7 @@ export class TickService {
     private intervalId:any;
     private _isRunning:boolean;
     private _speed:number = 60;
-    public loopsPerTick:number = 2;
+    public loopsPerTick:number = 1;
     public tick:EventEmitter<number> = new EventEmitter ();
     public draw:EventEmitter<null> = new EventEmitter ();
 
@@ -17,7 +19,7 @@ export class TickService {
     }
 
     public set speed (value:number) {
-        if(this._speed != value){
+        if(this._speed != value && value > 0){
             this._speed = value;
             this.start ();
         }
@@ -38,6 +40,7 @@ export class TickService {
     constructor(
         private configService:ConfigService
     ) {
+        Alias.tickService = this;
         this._speed = configService.fps;
        // this.start ();
      }

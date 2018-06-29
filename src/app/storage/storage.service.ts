@@ -12,7 +12,7 @@ export class StorageService {
 
     constructor() { }
 
-    public load (id:string):string {
+    public load (id:string):any {
         const item = this.getItem(id);
         return item ? item.o : null;        
     }

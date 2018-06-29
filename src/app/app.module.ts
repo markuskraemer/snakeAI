@@ -1,3 +1,4 @@
+import { SimulationService } from './game/simulation.service';
 import { ConnectionsInfoComponent } from './components/connections-info/connections-info.component';
 import { CharacterPreviewComponent } from './ui/character-preview/character-preview.component';
 import { CharactersStorageListComponent } from './ui/characters-storage-list/characters-storage-list.component';
@@ -9,7 +10,6 @@ import { StorageService } from './storage/storage.service';
 import { ConfigService } from './config.service';
 import { TickService } from './tick.service';
 import { KeyboardService } from './game/Keyboard.service';
-import { GameService } from './game/game.service';
 import { GameBackgroudComponent } from './components/game-bg/game-bg.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -33,12 +33,12 @@ import { AppComponent } from './app.component';
     FormsModule
   ],
   providers: [
-      GameService,
       KeyboardService,
       TickService,
       ConfigService,
       StorageService,
       DialogService,
+      SimulationService,
       FormsModule
   ],
   bootstrap: [AppComponent]

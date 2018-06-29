@@ -1,7 +1,6 @@
 import { AISnake } from './../../game/AISnake';
 
 import { StorageService } from './../../storage/storage.service';
-import { GameService } from './../../game/game.service';
 
 import { DialogService } from '../dialogs/dialog.service';
 import { IStorageDescribtion } from '../../storage/IStorageDescribtion';
@@ -23,7 +22,6 @@ export class CharactersStorageListComponent implements OnInit {
     private dialog:ElementRef;
 
     constructor(
-        private gameService:GameService,
         private storageService:StorageService,
         private dialogService:DialogService
     ) { }
@@ -36,7 +34,7 @@ export class CharactersStorageListComponent implements OnInit {
     }
 
     public handleLoadClick (json:JSON):void {
-        this.gameService.startGameWithSnake(this.getCharacter(json));
+        //this.gameService.startGameWithSnake(this.getCharacter(json));
     }
 
     public handleDeleteClick (id:string) {

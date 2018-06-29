@@ -1,7 +1,7 @@
+import { SimulationService } from './game/simulation.service';
 import { DialogService } from './ui/dialogs/dialog.service';
 import { TickService } from './tick.service';
 import { ConfigService } from './config.service';
-import { GameService } from './game/game.service';
 import { Component } from '@angular/core';
 
 @Component({
@@ -10,18 +10,19 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
- 
+
+
     constructor(
-        public gameService:GameService,
+        public simulation:SimulationService,
         public configService:ConfigService,
         public tickService:TickService,
         public dialogService:DialogService
     ){
-        
+        simulation.runFirstOrStoredGeneration ();
+        tickService.start ();
     }
 
     public getInfo ():void {
-        console.log("INFO: " + this.gameService.snake.brain.getInfo());
     }
 
 }

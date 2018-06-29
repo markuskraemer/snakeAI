@@ -62,6 +62,11 @@ export class AISnake extends Snake {
         return this._borderNeuronsEnabled;
     }
 
+    public toJSON ():any {
+        let { brain, ticks, id, bodyParts } = this;
+        return {brain, ticks, id, bodyParts};
+    }
+
     public static fromJSON (json:JSON):AISnake {
         const snake:AISnake = new AISnake (false);
         const jsonBodyParts:{x:number, y:number}[] = json['bodyParts']; 
@@ -200,7 +205,7 @@ export class AISnake extends Snake {
     private checkNoFoodPeriod ():void {
         if(this.noFoodTicks > 100) {
             this.killedBecauseOfCircularMotion = true;
-            Alias.gameService.snakeDead ();
+            this.game.snakeDead ();
         }
     }
 
@@ -244,25 +249,25 @@ export class AISnake extends Snake {
     private updateInput ():void {
         const headPos:XY = this.bodyParts[0];
 
-        if(headPos.x == 0|| headPos.x == Alias.gameService.width-1){
-            if(headPos.y == 0 || headPos.y == Alias.gameService.height-1){
+        if(headPos.x == 0|| headPos.x == this.game.width-1){
+            if(headPos.y == 0 || headPos.y == this.game.height-1){
                // debugger;
             }
         }else if(headPos.y == 0){
-            if(headPos.x == 0 || headPos.x == Alias.gameService.width-1){
+            if(headPos.x == 0 || headPos.x == this.game.width-1){
                 // debugger;
             }
         }
 
 
-        const foodPos:XY = Alias.gameService.foodPos;
+        const foodPos:XY = this.game.foodPos;
 
         // border
         if(this._borderNeuronsEnabled){
 
             const distBorderT:number = - headPos.y - 1;
-            const distBorderB:number = Alias.gameService.height - headPos.y;
-            const distBorderR:number = Alias.gameService.width - headPos.x;
+            const distBorderB:number = this.game.height - headPos.y;
+            const distBorderR:number = this.game.width - headPos.x;
             const distBorderL:number = - headPos.x - 1;
 
             this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = MathUtils.sigmoidNegPos(distBorderT);
@@ -313,7 +318,7 @@ export class AISnake extends Snake {
 
     private getClosestDistBodyPartHorizontal (headPos:XY, isLeft:boolean):number {
         const bodyPartsOnRow:XY[] = this.getBodyPartsOnRow (headPos.y);
-        let closestDist:number = isLeft ? - Alias.gameService.width - 2 : Alias.gameService.width + 2;
+        let closestDist:number = isLeft ? - this.game.width - 2 : this.game.width + 2;
         for(let bodyPart of bodyPartsOnRow){
             if((isLeft && (bodyPart.x < headPos.x)) || (!isLeft && (bodyPart.x > headPos.x))){
                 if(Math.abs(bodyPart.x - headPos.x) < Math.abs(closestDist)){
@@ -326,7 +331,7 @@ export class AISnake extends Snake {
 
     private getClosestDistBodyPartVertical (headPos:XY, isTop:boolean):number {
         const bodyPartsOnCol:XY[] = this.getBodyPartsOnCol (headPos.x);
-        let closestDist:number = isTop ? - Alias.gameService.height - 2 : Alias.gameService.height + 2;
+        let closestDist:number = isTop ? - this.game.height - 2 : this.game.height + 2;
         for(let bodyPart of bodyPartsOnCol){
             if((isTop && (bodyPart.y < headPos.y)) || (!isTop && (bodyPart.y > headPos.y))) {
                 if(Math.abs(bodyPart.y - headPos.y) < Math.abs(closestDist)){

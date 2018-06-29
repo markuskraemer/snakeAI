@@ -1,4 +1,4 @@
-import { GameService } from './../../game/game.service';
+
 import { Component, OnInit, Input, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 
 @Component({
@@ -33,8 +33,7 @@ export class GameBackgroudComponent implements OnChanges {
     public canvasHeight:number;
 
     constructor(
-        private elementRef:ElementRef,
-        public gameService:GameService
+        private elementRef:ElementRef
     ) { 
     }
 
@@ -42,7 +41,6 @@ export class GameBackgroudComponent implements OnChanges {
         this.canvasWidth = this.width * this.tileSize;
         this.canvasHeight = this.height * this.tileSize;
        
-        console.log("gameBg onchnaged: ", changes, " _ " + this.canvasWidth + " | " + this.canvasHeight);
         requestAnimationFrame ( () => this.draw ());
     }
 

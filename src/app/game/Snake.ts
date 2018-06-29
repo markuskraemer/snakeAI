@@ -1,3 +1,4 @@
+import { Game } from './Game';
 import { IStorable } from './../storage/IStorable';
 import { Direction } from './../model/Direction.enum';
 import { XY } from './../model/XY';
@@ -13,10 +14,11 @@ export class Snake implements IStorable {
     public hasEaten:boolean;
     public isDead:boolean;
     public ticks:number = 0;
-    public noFoodTicks:number = 0;
+    public noFoodTicks:number = 0; 
     public color;
-
-    constructor (){
+    public game:Game;
+    
+    constructor () {
         this.id = '' + Snake.count ++; 
         this.color = 0xffffff;
         this.bodyParts = [new XY ()];
@@ -42,16 +44,16 @@ export class Snake implements IStorable {
 
             if(this.findIndexInBody (this.bodyParts[0]) > 0){
                 this.isDead = true;
-                Alias.gameService.snakeDead ();                
+                this.game.snakeDead ();                
             }
         }else{
             this.isDead = true;
-            Alias.gameService.snakeDead ();
+            this.game.snakeDead ();
         }       
     }
 
     private headIsOnMap (headPos:XY):boolean {
-        if(headPos.x < 0 || headPos.x >= Alias.gameService.width || headPos.y < 0 || headPos.y >= Alias.gameService.height){
+        if(headPos.x < 0 || headPos.x >= this.game.width || headPos.y < 0 || headPos.y >= this.game.height){
             return false;
         }
         return true;
@@ -73,9 +75,9 @@ export class Snake implements IStorable {
     }
 
     private checkEat (headPos:XY):void {
-        if(headPos.equals(Alias.gameService.foodPos)){
+        if(headPos.equals(this.game.foodPos)){
             this.hasEaten = true;
-            Alias.gameService.eatFood ();
+            this.game.eatFood ();
             this.noFoodTicks = 0;
         }else{
             this.hasEaten = false;
