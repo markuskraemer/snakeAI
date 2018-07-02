@@ -82,7 +82,7 @@ export class SimulationService {
 
         if(this.autoRunNextGeneration) {
             clearTimeout(this.timeout);
-            this.timeout = setTimeout (()=> this.runNextGeneration (), 500 / (this.tickService.speed/60));
+            this.timeout = setTimeout (()=> this.runNextGeneration (), 200 / (this.tickService.speed/60));
         }
     }
 

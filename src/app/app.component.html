@@ -1,20 +1,23 @@
 <div class="main">
     <div class="ui">
         <input type="button" value="{{tickService.isRunning?'Stop':'Start'}}" (click)="tickService.isRunning?tickService.stop():tickService.start()"><br>
+        <input type="checkbox" [(ngModel)]="showGenerations">showGenerations<br>
         <input type="checkbox" [(ngModel)]="simulation.autoRunNextGeneration">autoRunNextGeneration {{simulation.autoRunNextGeneration}}<br>
         <input type="number" [(ngModel)]="tickService.loopsPerTick"> loopsPerTick<br>
         <input type="number" [(ngModel)]="tickService.speed">FPS<br>
-
+        <app-neuralNetwork class="network-info" [network]="inspectedGame?inspectedGame.snake.brain:null"></app-neuralNetwork>
     </div>
     <div class="simulation">
         <div class="info">Generation: {{simulation.currentGeneration.generationNumber}}</div>
-        <div class="game-view-container">
+        <div class="game-view-container" *ngIf="showGenerations">
                 <div *ngFor="let game of simulation.currentGeneration.games;let i = index" 
                         class="game-view" 
                         [style.width]="game.width*game.tileSize+'px'" 
                         [style.height]="game.height*game.tileSize+20+'px'"
                         [class.finished]="!game.isRunning"
-                        [class.good]="game.isGood">
+                        [class.good]="game.isGood"
+                        [class.inspected]="game==inspectedGame"
+                        (click)="inspectedGame=game">
                     <div class="score">({{i}}) {{game.snake.bodyParts.length}} | {{game.snake.ticks}}</div> 
                     <app-game-bg [width]="game.width" [height]="game.height" [tileSize]="game.tileSize" class="game-layer"></app-game-bg>
                     <app-game-fg [width]="game.width" [height]="game.height" [tileSize]="game.tileSize" class="game-layer"

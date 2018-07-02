@@ -1,3 +1,5 @@
+import { Game } from './game/Game';
+import { AISnake } from './game/AISnake';
 import { SimulationService } from './game/simulation.service';
 import { DialogService } from './ui/dialogs/dialog.service';
 import { TickService } from './tick.service';
@@ -11,6 +13,8 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
 
+    public showGenerations:boolean = true;
+    public inspectedGame:Game;
 
     constructor(
         public simulation:SimulationService,

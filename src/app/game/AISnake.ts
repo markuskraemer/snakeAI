@@ -25,7 +25,7 @@ export class AISnake extends Snake {
 
     public brain:NeuralNetwork;
     public killedBecauseOfCircularMotion:boolean;
-    private _borderNeuronsEnabled:boolean = false;
+    private _borderNeuronsEnabled:boolean = true;
     private _foodNeuronsEnabled:boolean = true;
     private _bodyNeuronsEnabled:boolean = true;
 
@@ -94,7 +94,7 @@ export class AISnake extends Snake {
         super ();
         if(selfInit){
             this.createBrain (Alias.configService.hiddenNeurons);
-            this.synchronizeWeights ();
+           // this.synchronizeWeights ();
         }
     }
 
@@ -111,7 +111,7 @@ export class AISnake extends Snake {
         myClone.ticks = 0;
         myClone.brain.copyWeightsFrom (this.brain);
         myClone.brain.randomizeAnyConnection (.2);
-        myClone.synchronizeWeights ();
+       // myClone.synchronizeWeights ();
         myClone.color = this.color - 0x111122;
         if(myClone.color < 0)
             myClone.color += 0xffffff;
@@ -246,6 +246,10 @@ export class AISnake extends Snake {
         }
     }
 
+    private calc (n:number):number {
+        return n / this.game.width;
+    }
+
     private updateInput ():void {
         const headPos:XY = this.bodyParts[0];
 
@@ -270,10 +274,10 @@ export class AISnake extends Snake {
             const distBorderR:number = this.game.width - headPos.x;
             const distBorderL:number = - headPos.x - 1;
 
-            this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = MathUtils.sigmoidNegPos(distBorderT);
-            this.brain.getInputNeuronFromName (NeuronNames.BorderBottom).input = MathUtils.sigmoidNegPos(distBorderB);
-            this.brain.getInputNeuronFromName (NeuronNames.BorderRight).input = MathUtils.sigmoidNegPos(distBorderR);
-            this.brain.getInputNeuronFromName (NeuronNames.BorderLeft).input = MathUtils.sigmoidNegPos(distBorderL);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = this.calc(distBorderT);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderBottom).input = this.calc(distBorderB);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderRight).input = this.calc(distBorderR);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderLeft).input = this.calc(distBorderL);
         }else{
             this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = 0;
             this.brain.getInputNeuronFromName (NeuronNames.BorderBottom).input = 0;
@@ -287,8 +291,8 @@ export class AISnake extends Snake {
             const distFoodVertical:number = foodPos.y - headPos.y;
             const distFoodHorizontal:number = foodPos.x - headPos.x;
 
-            this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = MathUtils.sigmoidNegPos(distFoodVertical);
-            this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = MathUtils.sigmoidNegPos(distFoodHorizontal);
+            this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = this.calc(distFoodVertical);
+            this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = this.calc(distFoodHorizontal);
         }else{
             this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = 0;
             this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = 0;
@@ -303,10 +307,10 @@ export class AISnake extends Snake {
             const distBodyL:number = this.getClosestDistBodyPartHorizontal (headPos, true);
 
             
-            this.brain.getInputNeuronFromName (NeuronNames.BodyTop).input = MathUtils.sigmoidNegPos(distBodyT);
-            this.brain.getInputNeuronFromName (NeuronNames.BodyBottom).input = MathUtils.sigmoidNegPos(distBodyB);
-            this.brain.getInputNeuronFromName (NeuronNames.BodyRight).input = MathUtils.sigmoidNegPos(distBodyR);
-            this.brain.getInputNeuronFromName (NeuronNames.BodyLeft).input = MathUtils.sigmoidNegPos(distBodyL);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyTop).input = this.calc(distBodyT);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyBottom).input = this.calc(distBodyB);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyRight).input = this.calc(distBodyR);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyLeft).input = this.calc(distBodyL);
         
         }else{
             this.brain.getInputNeuronFromName (NeuronNames.BodyTop).input = 0;
