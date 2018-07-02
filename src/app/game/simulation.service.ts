@@ -15,7 +15,7 @@ export class SimulationService {
     private timeout:any;
     private _autoRunNextGeneration:boolean = true;
     private generationIsFinished:boolean;
-
+    private countdown:number = 0;
     public currentGeneration:Generation;
     public statistic:IGenerationStatistic[] = [];
 
@@ -37,7 +37,16 @@ export class SimulationService {
         public storageService:StorageService,
         public tickService:TickService,
         public configService:ConfigService
-    ) { }
+    ) { 
+        tickService.tick.subscribe ( () => {
+            if(this.generationIsFinished){
+                if(this.autoRunNextGeneration && this.countdown -- == 0){
+                    this.runNextGeneration ();
+                }
+            }
+        })
+
+    }
 
 
     public runFirstOrStoredGeneration ():void {
@@ -81,13 +90,19 @@ export class SimulationService {
         this.storeBestSnakes ();
 
         if(this.autoRunNextGeneration) {
-            clearTimeout(this.timeout);
-            this.timeout = setTimeout (()=> this.runNextGeneration (), 200 / (this.tickService.speed/60));
+            this.countdown = 30;
+
         }
     }
 
     private updateStatistic ():void {
-        this.statistic.push({longest:this.currentGeneration.getLongestSnakeLength (), average:this.currentGeneration.getAverageSnakeLength ()});
+        this.statistic.push({
+            longest:this.currentGeneration.getLongestSnakeLength (), 
+            average:this.currentGeneration.getAverageSnakeLength (),
+            generationNumber: this.currentGeneration.generationNumber});
+        if(this.statistic.length > 100){
+            this.statistic = this.statistic.filter((value:IGenerationStatistic, index:number) => { return index % 2 == 0 });
+        }
     }
 
     private storeBestSnakes ():void {

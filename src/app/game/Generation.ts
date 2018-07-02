@@ -58,7 +58,7 @@ export class Generation {
                 return -1;
             }else if(a.snake.bodyParts.length == b.snake.bodyParts.length){
                 
-                if(a.snake.ticks > b.snake.ticks){
+                if(!a.snake.killedBecauseOfCircularMotion && (a.snake.ticks > b.snake.ticks)){
                     return -1;
                 }else{
                     return 1;

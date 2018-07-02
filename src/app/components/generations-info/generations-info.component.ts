@@ -20,7 +20,6 @@ export class GenerationsInfoComponent implements OnInit, DoCheck {
 
     @Input('statistic')
     public set statistic (data:IGenerationStatistic[]){
-        console.log("set statistic: ", data);
         this._statistic = data;
         if(this._isInited) 
             this.draw ();
@@ -77,6 +76,9 @@ export class GenerationsInfoComponent implements OnInit, DoCheck {
         options.elements = {
             point: {
                 pointStyle:'circle'
+            },
+            line: {
+                tension:0
             }
         }
 
@@ -95,7 +97,7 @@ export class GenerationsInfoComponent implements OnInit, DoCheck {
     }
 
     private createLabels ():string[]{
-        return this.statistic.map ((value:IGenerationStatistic, index:number) => { return String(index+1) });
+        return this.statistic.map ((value:IGenerationStatistic, index:number) => { return String(value.generationNumber) });
     }
 
     private getLongest ():number[]{

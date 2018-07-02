@@ -6,18 +6,22 @@ import { XY } from './../model/XY';
 import { Snake } from './Snake';
 
 enum NeuronNames {
-    TopClear = 'TopClear',
-    BottomClear = 'BottomClear',
-    RightClear = 'RightClear',
-    LeftClear = 'LeftClear',
-    FoodVertical = 'FoodVertical',
-    FoodHorizontal = 'FoodHorizontal',
+    BorderTop = 'BorderTop',
+    BorderBottom = 'BorderBottom',
+    BorderRight = 'BorderRight',
+    BorderLeft = 'BorderLeft',
     MoveHorizontal = 'MoveHorizontal',
     MoveVertical = 'MoveVertical',
+    FoodVertical = 'FoodVertical',
+    FoodHorizontal = 'FoodHorizontal',
+    BodyTop = 'BodyTop',
+    BodyBottom = 'BodyBottom',
+    BodyRight = 'BodyRight',
+    BodyLeft = 'BodyLeft'
 }
 
 
-export class AISnake extends Snake {
+export class AISnake4Directions extends Snake {
 
     public brain:NeuralNetwork;
     public killedBecauseOfCircularMotion:boolean;
@@ -63,8 +67,8 @@ export class AISnake extends Snake {
         return {brain, ticks, id, bodyParts};
     }
 
-    public static fromJSON (json:JSON):AISnake {
-        const snake:AISnake = new AISnake (false);
+    public static fromJSON (json:JSON):AISnake4Directions {
+        const snake:AISnake4Directions = new AISnake4Directions (false);
         const jsonBodyParts:{x:number, y:number}[] = json['bodyParts']; 
         
         jsonBodyParts.forEach ((value:{x:number, y:number}, index:number) => {
@@ -101,12 +105,12 @@ export class AISnake extends Snake {
         this.noFoodTicks = 0;
     }
 
-    public getMutatedClone ():AISnake {
-        const myClone:AISnake = new AISnake ();
+    public getMutatedClone ():AISnake4Directions {
+        const myClone:AISnake4Directions = new AISnake4Directions ();
         myClone.bodyParts.length = Alias.configService.snakeStartLength;
         myClone.ticks = 0;
         myClone.brain.copyWeightsFrom (this.brain);
-        myClone.brain.randomizeAnyConnection (.1);
+        myClone.brain.randomizeAnyConnection (.2);
        // myClone.synchronizeWeights ();
         myClone.color = this.color - 0x111122;
         if(myClone.color < 0)
@@ -116,14 +120,20 @@ export class AISnake extends Snake {
     }
 
     private createBrain (hiddenLayerLength:number):void {
-        this.brain = new NeuralNetwork (6, hiddenLayerLength, 2);
-        this.brain.inputLayer[0].name = NeuronNames.TopClear;
-        this.brain.inputLayer[1].name = NeuronNames.BottomClear;
-        this.brain.inputLayer[2].name = NeuronNames.RightClear;
-        this.brain.inputLayer[3].name = NeuronNames.LeftClear;
+        this.brain = new NeuralNetwork (10, hiddenLayerLength, 2);
+        this.brain.inputLayer[0].name = NeuronNames.BorderTop;
+        this.brain.inputLayer[1].name = NeuronNames.BorderBottom;
+        this.brain.inputLayer[2].name = NeuronNames.BorderRight;
+        this.brain.inputLayer[3].name = NeuronNames.BorderLeft;
 
         this.brain.inputLayer[4].name = NeuronNames.FoodVertical;
         this.brain.inputLayer[5].name = NeuronNames.FoodHorizontal;
+
+        this.brain.inputLayer[6].name = NeuronNames.BodyTop;
+        this.brain.inputLayer[7].name = NeuronNames.BodyBottom;
+        this.brain.inputLayer[8].name = NeuronNames.BodyLeft;
+        this.brain.inputLayer[9].name = NeuronNames.BodyRight;
+
 
         this.brain.outputLayer[0].name = NeuronNames.MoveHorizontal;
         this.brain.outputLayer[1].name = NeuronNames.MoveVertical;
@@ -163,7 +173,22 @@ export class AISnake extends Snake {
            }
         }
 
-     
+        const weightBodyHor:number = this.brain.getConnectionWeight(1, 0, 6);
+        const weightBodyVert:number = this.brain.getConnectionWeight(1, 0, 8);
+
+        for(let i:number = 0; i < this.brain.hiddenLayer.length; ++i){
+            if(i % 2 == 0){
+                this.brain.setConnectionWeight (1, i, 6, weightBodyHor);
+                this.brain.setConnectionWeight (1, i, 7, weightBodyHor);
+                this.brain.setConnectionWeight (1, i, 8, weightBodyVert);
+                this.brain.setConnectionWeight (1, i, 9, weightBodyVert);
+            }else{
+                this.brain.setConnectionWeight (1, i, 6, weightBodyVert);
+                this.brain.setConnectionWeight (1, i, 7, weightBodyVert);
+                this.brain.setConnectionWeight (1, i, 8, weightBodyHor);
+                this.brain.setConnectionWeight (1, i, 9, weightBodyHor);                
+            }
+        }
     }
 
     public tick ():void {
@@ -225,23 +250,6 @@ export class AISnake extends Snake {
         return n / this.game.width;
     }
 
-    private minus1_0_1 (n:number):number {
-        if(n == 0)  return 0;
-        return n / Math.abs(n);
-    }
-
-    private isClear (x:number, y:number):boolean{
-        if(x < 0 || x >= this.game.width) return false;
-        if(y < 0 || y >= this.game.height) return false;
-        let bodyTest:boolean = true;
-        this.bodyParts.forEach ((part:XY) => { 
-            if(part.x == x && part.y == y){ 
-                bodyTest =  false;
-            }
-        });
-        return bodyTest;
-    }
-
     private updateInput ():void {
         const headPos:XY = this.bodyParts[0];
 
@@ -255,25 +263,26 @@ export class AISnake extends Snake {
             }
         }
 
+
         const foodPos:XY = this.game.foodPos;
 
         // border
         if(this._borderNeuronsEnabled){
 
-            const topIsClear:boolean = this.isClear (headPos.x, headPos.y - 1);
-            const bottomIsClear:boolean = this.isClear (headPos.x, headPos.y + 1);
-            const rightIsClear:boolean = this.isClear (headPos.x + 1, headPos.y);
-            const leftIsClear:boolean = this.isClear (headPos.x - 1, headPos.y);
+            const distBorderT:number = - headPos.y - 1;
+            const distBorderB:number = this.game.height - headPos.y;
+            const distBorderR:number = this.game.width - headPos.x;
+            const distBorderL:number = - headPos.x - 1;
 
-            this.brain.getInputNeuronFromName (NeuronNames.TopClear).input = topIsClear ? 1 : 0;
-            this.brain.getInputNeuronFromName (NeuronNames.BottomClear).input = bottomIsClear ? 1 : 0;
-            this.brain.getInputNeuronFromName (NeuronNames.RightClear).input = rightIsClear ? 1 : 0;
-            this.brain.getInputNeuronFromName (NeuronNames.LeftClear).input = leftIsClear ? 1 : 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = this.calc(distBorderT);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderBottom).input = this.calc(distBorderB);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderRight).input = this.calc(distBorderR);
+            this.brain.getInputNeuronFromName (NeuronNames.BorderLeft).input = this.calc(distBorderL);
         }else{
-            this.brain.getInputNeuronFromName (NeuronNames.TopClear).input = 0;
-            this.brain.getInputNeuronFromName (NeuronNames.BottomClear).input = 0;
-            this.brain.getInputNeuronFromName (NeuronNames.RightClear).input = 0;
-            this.brain.getInputNeuronFromName (NeuronNames.LeftClear).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BorderTop).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BorderBottom).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BorderRight).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BorderLeft).input = 0;
         }
 
         // food
@@ -282,11 +291,32 @@ export class AISnake extends Snake {
             const distFoodVertical:number = foodPos.y - headPos.y;
             const distFoodHorizontal:number = foodPos.x - headPos.x;
 
-            this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = this.minus1_0_1(distFoodVertical);
-            this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = this.minus1_0_1(distFoodHorizontal);
+            this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = this.calc(distFoodVertical);
+            this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = this.calc(distFoodHorizontal);
         }else{
             this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = 0;
             this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = 0;
+        }
+
+        // body 
+        if(this._bodyNeuronsEnabled){
+
+            const distBodyT:number = this.getClosestDistBodyPartVertical (headPos, true);
+            const distBodyB:number = this.getClosestDistBodyPartVertical (headPos, false);
+            const distBodyR:number = this.getClosestDistBodyPartHorizontal (headPos, false);
+            const distBodyL:number = this.getClosestDistBodyPartHorizontal (headPos, true);
+
+            
+            this.brain.getInputNeuronFromName (NeuronNames.BodyTop).input = this.calc(distBodyT);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyBottom).input = this.calc(distBodyB);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyRight).input = this.calc(distBodyR);
+            this.brain.getInputNeuronFromName (NeuronNames.BodyLeft).input = this.calc(distBodyL);
+        
+        }else{
+            this.brain.getInputNeuronFromName (NeuronNames.BodyTop).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BodyBottom).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BodyRight).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.BodyLeft).input = 0;
         }
     }
 
