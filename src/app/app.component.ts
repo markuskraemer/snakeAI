@@ -14,6 +14,7 @@ import { Component } from '@angular/core';
 export class AppComponent {
 
     public showGenerations:boolean = true;
+    public showHallOfFame:boolean = true;
     public inspectedGame:Game;
 
     constructor(
@@ -22,7 +23,7 @@ export class AppComponent {
         public tickService:TickService,
         public dialogService:DialogService
     ){
-        simulation.runFirstOrStoredGeneration ();
+        simulation.start ();
         tickService.start ();
     }
 

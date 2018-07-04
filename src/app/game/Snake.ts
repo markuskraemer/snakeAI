@@ -15,12 +15,14 @@ export class Snake implements IStorable {
     public isDead:boolean;
     public ticks:number = 0;
     public noFoodTicks:number = 0; 
-    public color;
+    public color:number;
     public game:Game;
     
     constructor () {
         this.id = '' + Snake.count ++; 
-        this.color = 0xffffff;
+        const c:number = 0x777777;
+        this.color = Math.floor(Math.random () * (c)) + c;
+        console.log("new color: " + this.color.toString(16));
         this.bodyParts = [new XY ()];
     }
 
@@ -42,7 +44,7 @@ export class Snake implements IStorable {
             this.checkEat (newPos);
             this.updateBodyParts (newPos);
 
-            if(this.findIndexInBody (this.bodyParts[0]) > 0){
+            if(Alias.simulation.bodyEnabled && this.findIndexInBody (this.bodyParts[0]) > 0){
                 this.isDead = true;
                 this.game.snakeDead ();                
             }

@@ -1,3 +1,5 @@
+import { StaticGeneration } from './StaticGeneration';
+import { GameUtils } from './GameUtils';
 import { IGenerationStatistic } from './../model/IGenerationStatistic';
 import { ConfigService } from './../config.service';
 import { Alias } from './../Alias';
@@ -16,8 +18,23 @@ export class SimulationService {
     private _autoRunNextGeneration:boolean = true;
     private generationIsFinished:boolean;
     private countdown:number = 0;
-    public currentGeneration:Generation;
-    public statistic:IGenerationStatistic[] = [];
+    public useHallOfFameAsSource:boolean;
+    private _showHallOfFame:boolean;
+    public hallOfFame:AISnake[] = [];
+    public currentGeneration:StaticGeneration;
+    public statistics:IGenerationStatistic[] = [];
+    public bodyEnabled:boolean = true;
+
+    public set showHallOfFame (value:boolean){
+        if(this._showHallOfFame != value){
+            this._showHallOfFame = value;
+            this.runNextGeneration ();
+        }
+    }
+
+    public get showHallOfFame (){
+        return this._showHallOfFame;
+    }
 
     public set autoRunNextGeneration (value:boolean){
         if(this._autoRunNextGeneration != value){
@@ -38,6 +55,7 @@ export class SimulationService {
         public tickService:TickService,
         public configService:ConfigService
     ) { 
+        Alias.simulation = this;
         tickService.tick.subscribe ( () => {
             if(this.generationIsFinished){
                 if(this.autoRunNextGeneration && this.countdown -- == 0){
@@ -48,6 +66,20 @@ export class SimulationService {
 
     }
 
+    public start ():void{
+        this.loadHallOfFame ();
+        this.runFirstOrStoredGeneration ();
+    }
+
+    private loadHallOfFame ():void {
+        const fileList:any[] = this.storageService.load ('hallOfFame');        
+        if(fileList && fileList.length > 0){
+            fileList.forEach((value:JSON, index:number) => {
+                this.hallOfFame.push(AISnake.fromJSON(value));
+            })
+        }     
+        this.sortHallOfFame ();       
+    }
 
     public runFirstOrStoredGeneration ():void {
         
@@ -67,8 +99,18 @@ export class SimulationService {
     }
 
     private runNextGeneration () {
-        const oldGeneration:Generation = this.currentGeneration;
-        this.currentGeneration = oldGeneration.next ();
+        const oldGeneration:StaticGeneration = this.currentGeneration;
+        
+        if(this.showHallOfFame){
+            this.currentGeneration = new StaticGeneration (this.hallOfFame);
+        }else if(this.useHallOfFameAsSource){
+            this.currentGeneration = new Generation (this.hallOfFame);
+        }else if(oldGeneration['next']){
+            this.currentGeneration = (<Generation>oldGeneration).next ();
+        }else{
+            this.runFirstOrStoredGeneration ();
+            return;
+        }
         oldGeneration.destroy ();
         this.doRunGeneration ();
     } 
@@ -81,13 +123,17 @@ export class SimulationService {
 
     private handleGenerationFinished ():void {
         this.generationIsFinished = true;
-        console.log("Simulation handleGenerationFinished");
+      
         if(this.subscribtion){
             this.subscribtion.unsubscribe ();
         }
         
-        this.updateStatistic ();
-        this.storeBestSnakes ();
+        this.updateStatistics ();
+
+        if(!this.showHallOfFame){
+            this.storeBestSnakes ();
+            this.updateHallOfFame ();
+        }
 
         if(this.autoRunNextGeneration) {
             this.countdown = 30;
@@ -95,13 +141,22 @@ export class SimulationService {
         }
     }
 
-    private updateStatistic ():void {
-        this.statistic.push({
+    private updateStatistics ():void {
+        const av:number = this.currentGeneration.getAverageSnakeLength ();
+        let avProgress:number;
+        if(this.statistics.length > 0){
+            avProgress = 100 * av / this.statistics[0].average ;
+        }else{
+            avProgress = 100;
+        }
+        this.statistics.push({
             longest:this.currentGeneration.getLongestSnakeLength (), 
             average:this.currentGeneration.getAverageSnakeLength (),
-            generationNumber: this.currentGeneration.generationNumber});
-        if(this.statistic.length > 100){
-            this.statistic = this.statistic.filter((value:IGenerationStatistic, index:number) => { return index % 2 == 0 });
+            generationNumber: this.currentGeneration.generationNumber,
+            averageProgress:avProgress                
+        });
+        if(this.statistics.length > 100){
+            this.statistics = this.statistics.filter((value:IGenerationStatistic, index:number) => { return index % 2 == 0 });
         }
     }
 
@@ -110,6 +165,28 @@ export class SimulationService {
         const bestSnakesJSON:any[] = [];
         bestSnakes.forEach((snake:AISnake) => bestSnakesJSON.push(snake.toJSON()));
         this.storageService.save ('bestPool', bestSnakesJSON);
+    }
+
+
+    private sortHallOfFame ():void {
+        this.hallOfFame = GameUtils.sortSnakes (this.hallOfFame);
+    }
+
+    private updateHallOfFame ():void {
+
+        const bestSnakes:AISnake[] = this.currentGeneration.getBestSnakes ();
+        const bestFromPool:AISnake[] = bestSnakes.splice (0, this.configService.hallOfFameLength);
+        this.hallOfFame = this.hallOfFame.concat (bestFromPool);
+        this.hallOfFame = GameUtils.sortSnakes(this.hallOfFame);
+        this.hallOfFame.length = Math.min(this.hallOfFame.length, this.configService.hallOfFameLength);
+        
+        const hallOfFameJSON:any[] = this.hallOfFame.map((snake:AISnake) => { return snake.toJSON (); } );
+
+        this.storageService.save ('hallOfFame', hallOfFameJSON);
+
+        console.log("*** HOF: ", this.hallOfFame);
+        console.log("HOF: ", hallOfFameJSON);
+
     }
 
 }

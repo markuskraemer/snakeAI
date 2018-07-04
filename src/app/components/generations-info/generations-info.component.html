@@ -1,3 +1,6 @@
 
 GenerationsInfo len:{{statistic.length}}
+<span *ngIf="statistic&&statistic.length>0">
+Best: {{statistic[statistic.length-1].longest}} | Av: {{statistic[statistic.length-1].average}}<br> 
+</span>
 <canvas id="statistic-canvas"></canvas>

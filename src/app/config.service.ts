@@ -24,4 +24,6 @@ export class ConfigService {
     public readonly snakeStartLength:number = 3;
     public readonly hiddenNeurons:number = 0;
     public readonly bestStoredSnakesCount:number = 4;
+    public readonly hallOfFameLength:number = 5;
+    public mutationRate:number = .1;
 }

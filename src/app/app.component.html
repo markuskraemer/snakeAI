@@ -1,10 +1,16 @@
 <div class="main">
     <div class="ui">
         <input type="button" value="{{tickService.isRunning?'Stop':'Start'}}" (click)="tickService.isRunning?tickService.stop():tickService.start()"><br>
-        <input type="checkbox" [(ngModel)]="showGenerations">showGenerations<br>
-        <input type="checkbox" [(ngModel)]="simulation.autoRunNextGeneration">autoRunNextGeneration {{simulation.autoRunNextGeneration}}<br>
+        <input type="checkbox" [(ngModel)]="showGenerations">show Generations<br>
+        <input type="checkbox" [(ngModel)]="simulation.showHallOfFame">show HallOfFame<br>
+        <input type="checkbox" [(ngModel)]="simulation.autoRunNextGeneration">autoRunNextGeneration<br>
+        <input type="checkbox" [(ngModel)]="simulation.useHallOfFameAsSource">useHallOfFameAsSource<br>
+        <br>
+        <input type="checkbox" [(ngModel)]="simulation.bodyEnabled">Die when hit body<br>
+        
         <input type="number" [(ngModel)]="tickService.loopsPerTick"> loopsPerTick<br>
         <input type="number" [(ngModel)]="tickService.speed">FPS<br>
+        <input type="number" [(ngModel)]="configService.mutationRate">mutationRate<br>
         <app-neuralNetwork class="network-info" [network]="inspectedGame?inspectedGame.snake.brain:null"></app-neuralNetwork>
     </div>
     <div class="simulation">
@@ -28,36 +34,5 @@
     </div>
 </div>
 <div class="generations-info">
-    <app-generations-info [statistic]="simulation.statistic"></app-generations-info>
+    <app-generations-info [statistic]="simulation.statistics"></app-generations-info>
 </div>
-<!--
-<input type="button" value="Snake Info" (click)="getInfo ()"><br>
-Ticks:{{tickService.ticks}} | Time:{{ tickService.ticks | date:'mm:ss' }}<br>
-<input type="button" value="{{tickService.isRunning?'Stop':'Start'}}" (click)="tickService.isRunning?tickService.stop():tickService.start()"><br>
-<input type="checkbox" [checked]="gameService.borderNeuronsEnabled" (change)="gameService.borderNeuronsEnabled=!gameService.borderNeuronsEnabled">
-Enable Borderneurons: {{gameService.snake.borderNeuronsEnabled}}<br>
-<input type="checkbox" [checked]="gameService.foodNeuronsEnabled" (change)="gameService.foodNeuronsEnabled=!gameService.foodNeuronsEnabled">
-Enable Foodneurons: {{gameService.snake.foodNeuronsEnabled}}<br>
-<input type="checkbox" [checked]="gameService.bodyNeuronsEnabled" (change)="gameService.bodyNeuronsEnabled=!gameService.bodyNeuronsEnabled">
-Enable Bodyneurons: {{gameService.snake.bodyNeuronsEnabled}}<br>
-<br>
-loopsPerTick: <input type="number" [(ngModel)]="tickService.loopsPerTick"><br>
-FPS: <input type="number" [(ngModel)]="tickService.speed"><br>
-Snakes: {{gameService.snakeCount}} | Ticks: {{gameService.snake.ticks}} | Length:{{gameService.snake.bodyParts.length}} 
-| bestLength: {{gameService.bestSnake.bodyParts.length }} | bestTicks: {{gameService.bestSnake.ticks }}<br>
-<br> 
-<input type="button" value="save current" (click)="gameService.saveCurrentSnake()">
-<input type="button" value="load..." (click)="dialogService.openStorageList()">
-<br>
-<br>
-<app-game-bg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"></app-game-bg>
-<app-game-fg [width]="gameService.width" [height]="gameService.height" [tileSize]="configService.tileSize"
-     [snake]="gameService.snake" [foodPos]="gameService.foodPos">
-</app-game-fg>
-
-<div class="ui">
-    <app-neuralNetwork [network]="gameService.snake?gameService.snake.brain:null"></app-neuralNetwork>
-</div>
-<app-dialogs></app-dialogs>
-<app-connections-info [snake]="gameService.bestSnake"></app-connections-info>
--->

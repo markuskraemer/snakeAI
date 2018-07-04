@@ -1,18 +1,15 @@
+import { StaticGeneration } from './StaticGeneration';
+import { GameUtils } from './GameUtils';
 import { EventEmitter } from '@angular/core';
 
 import { AISnake } from './AISnake';
 import { Alias } from './../Alias';
 import { Game } from './Game';
-export class Generation {
 
-    private subscribtions:any[] = [];
-    private endedCount:number;
-    public generationNumber:number = 0;
-    public games:Game[];
-    public readonly finished:EventEmitter<null> = new EventEmitter ();
+export class Generation extends StaticGeneration {
 
-    constructor (private seedSnakes:AISnake[]){
-
+    constructor (protected seedSnakes:AISnake[]){
+        super (seedSnakes);
     }
 
     private getMutatedSnake (seed:number):AISnake {
@@ -26,7 +23,6 @@ export class Generation {
         newOne.generationNumber = this.generationNumber + 1;
         return newOne;
     }
-
 
     public destroy ():void {
         this.subscribtions.forEach ((subscribtion:any)=>subscribtion.unsubscribe ());
@@ -49,57 +45,10 @@ export class Generation {
         }
     }
 
-
-    private getGamesSortedByBest ():Game[] {
-        const copy:Game[] = this.games.concat ();
-        copy.sort ((a:Game, b:Game) => {
-            
-            if(a.snake.bodyParts.length > b.snake.bodyParts.length){
-                return -1;
-            }else if(a.snake.bodyParts.length == b.snake.bodyParts.length){
-                
-                if(!a.snake.killedBecauseOfCircularMotion && (a.snake.ticks > b.snake.ticks)){
-                    return -1;
-                }else{
-                    return 1;
-                }                    
-
-            }else{
-                return 1
-            }
-        });
-        return copy;
-    }
-
-    public getBestSnakes ():AISnake []{        
-        const gamesCopy:Game[] = this.getBestGames ();
-        const snakes:AISnake[] = []; 
-        gamesCopy.forEach ((game:Game)=>snakes.push(game.snake));
-        return snakes;
-    }
-
-    public getBestGames ():Game []{
-        const count:number = Alias.configService.bestGamesCount;
-        const gamesCopy:Game[] = this.getGamesSortedByBest ();
-        gamesCopy.splice(count);
-        return gamesCopy;
-    }
-
-    public getLongestSnakeLength ():number {
-        return this.getBestSnakes()[0].bodyParts.length;
-    }
-
-    public getAverageSnakeLength ():number {
-        let totalLength:number = 0;
-        this.games.forEach ((game:Game)=>totalLength += game.snake.bodyParts.length);
-        return totalLength / this.games.length;
-    }
-
-    private handleGameEnded (game:Game):void {
+    protected handleGameEnded (game:Game):void {
         ++this.endedCount;
         if(this.endedCount == this.games.length){
-            console.log("Generation all games have ended!");
-            this.getGamesSortedByBest ();
+            
             const bestGames:Game[] = this.getBestGames ();
             bestGames.forEach ((game:Game)=>{game.isGood=true});
 

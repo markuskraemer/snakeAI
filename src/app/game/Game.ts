@@ -19,6 +19,7 @@ export class Game {
     public start (snake:AISnake):void {
         this.snake = snake;
         this.snake.game = this;
+        this.snake.setToGameStartValues ();
         this.snake.setHeadPosition (new XY (2, Math.floor(this.height / 2)));
         this.determineFoodPos ();
         const sub:any = Alias.tickService.tick.subscribe (()=>this.snake.tick());

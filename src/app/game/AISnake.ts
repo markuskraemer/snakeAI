@@ -58,6 +58,10 @@ export class AISnake extends Snake {
         return this._borderNeuronsEnabled;
     }
 
+    public clone ():AISnake {
+        return AISnake.fromJSON(this.toJSON());
+    }
+
     public toJSON ():any {
         let { brain, ticks, id, bodyParts } = this;
         return {brain, ticks, id, bodyParts};
@@ -106,7 +110,7 @@ export class AISnake extends Snake {
         myClone.bodyParts.length = Alias.configService.snakeStartLength;
         myClone.ticks = 0;
         myClone.brain.copyWeightsFrom (this.brain);
-        myClone.brain.randomizeAnyConnection (.1);
+        myClone.brain.randomizeAnyConnection (Alias.configService.mutationRate);
        // myClone.synchronizeWeights ();
         myClone.color = this.color - 0x111122;
         if(myClone.color < 0)
@@ -191,6 +195,9 @@ export class AISnake extends Snake {
     }
 
     private setDir (horizontalOutput:number, verticalOutput:number){
+        if(horizontalOutput == 0 && verticalOutput == 0){
+            return;
+        }
         if(Math.abs(horizontalOutput) > Math.abs(verticalOutput)) {
             if(horizontalOutput > 0){
                 if(this.direction != Direction.Left)

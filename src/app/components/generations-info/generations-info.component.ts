@@ -49,7 +49,7 @@ export class GenerationsInfoComponent implements OnInit, DoCheck {
 
     ngDoCheck (){
         if(this._statistic.length != this._statisticLength){
-            console.log("new len" , this._statistic);
+          
             if(this._isInited)
                 this.draw ();
 
@@ -108,6 +108,9 @@ export class GenerationsInfoComponent implements OnInit, DoCheck {
         return this.statistic.map ((value:IGenerationStatistic) => { return value.average });
     }
 
+    private getAveragePogress ():number[]{
+        return this.statistic.map ((value:IGenerationStatistic) => { return value.averageProgress });
+    }
     private draw ():void {
         
         const labels:string[] = this.createLabels ();
@@ -118,7 +121,7 @@ export class GenerationsInfoComponent implements OnInit, DoCheck {
                 data: this.getLongest (),
                 fill: false,
                 pointRadius: 2,
-                pointHoverRadius: 15,
+                pointHoverRadius: 4,
                 showLine: true 
             },
             {
@@ -128,7 +131,17 @@ export class GenerationsInfoComponent implements OnInit, DoCheck {
                 data: this.getAverage (),
                 fill: false,
                 pointRadius: 2,
-                pointHoverRadius: 15,
+                pointHoverRadius: 4,
+                showLine: true 
+            },
+            {
+                label: 'Av. Progress',
+                backgroundColor: 'orange',
+                borderColor: 'orange',
+                data: this.getAveragePogress (),
+                fill: false,
+                pointRadius: 2,
+                pointHoverRadius: 4,
                 showLine: true 
             }]
         this.chart.data = {labels:labels, datasets:datasets};
