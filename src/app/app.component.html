@@ -14,7 +14,7 @@
         <app-neuralNetwork class="network-info" [network]="inspectedGame?inspectedGame.snake.brain:null"></app-neuralNetwork>
     </div>
     <div class="simulation">
-        <div class="info">Generation: {{simulation.currentGeneration.generationNumber}}</div>
+        <div class="info">Generation: {{simulation.generationsCount}}</div>
         <div class="game-view-container" *ngIf="showGenerations">
                 <div *ngFor="let game of simulation.currentGeneration.games;let i = index" 
                         class="game-view" 

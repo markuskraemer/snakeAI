@@ -13,6 +13,7 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class SimulationService {
 
+
     private subscribtion:any;
     private timeout:any;
     private _autoRunNextGeneration:boolean = true;
@@ -24,6 +25,7 @@ export class SimulationService {
     public currentGeneration:StaticGeneration;
     public statistics:IGenerationStatistic[] = [];
     public bodyEnabled:boolean = true;
+    public generationsCount:number = 0;
 
     public set showHallOfFame (value:boolean){
         if(this._showHallOfFame != value){
@@ -116,6 +118,7 @@ export class SimulationService {
     } 
 
     private doRunGeneration ():void {
+        this.generationsCount ++;
         this.generationIsFinished = false;
         this.subscribtion = this.currentGeneration.finished.subscribe (()=>this.handleGenerationFinished());
         this.currentGeneration.run ();

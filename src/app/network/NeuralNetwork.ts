@@ -161,7 +161,7 @@ export class NeuralNetwork {
     private randomizeWeightsOfLayer (layer:WorkingNeuron[]):void{
         for(let i:number = 0; i < layer.length; ++i){
             for(let connection of layer[i].connections){
-                connection.weight = Math.random () * 2 - 1; 
+                connection.weight = Math.random () * 1 - 0; 
               //  console.log("rwl: " + i + " connection: ", connection);
             }
         }

@@ -12,13 +12,12 @@ enum NeuronNames {
     LeftClear = 'LeftClear',
     FoodVertical = 'FoodVertical',
     FoodHorizontal = 'FoodHorizontal',
-    MoveLeft = 'MoveLeft',
-    MoveRight = 'MoveRight',
-    MoveForeward = 'MoveForeward'
+    MoveHorizontal = 'MoveHorizontal',
+    MoveVertical = 'MoveVertical',
 }
 
 
-export class AISnake extends Snake {
+export class AISnake2Outputs extends Snake {
 
     public brain:NeuralNetwork;
     public killedBecauseOfCircularMotion:boolean;
@@ -59,8 +58,8 @@ export class AISnake extends Snake {
         return this._borderNeuronsEnabled;
     }
 
-    public clone ():AISnake {
-        return AISnake.fromJSON(this.toJSON());
+    public clone ():AISnake2Outputs {
+        return AISnake2Outputs.fromJSON(this.toJSON());
     }
 
     public toJSON ():any {
@@ -68,8 +67,8 @@ export class AISnake extends Snake {
         return {brain, ticks, id, bodyParts};
     }
 
-    public static fromJSON (json:JSON):AISnake {
-        const snake:AISnake = new AISnake (false);
+    public static fromJSON (json:JSON):AISnake2Outputs {
+        const snake:AISnake2Outputs = new AISnake2Outputs (false);
         const jsonBodyParts:{x:number, y:number}[] = json['bodyParts']; 
         
         jsonBodyParts.forEach ((value:{x:number, y:number}, index:number) => {
@@ -106,8 +105,8 @@ export class AISnake extends Snake {
         this.noFoodTicks = 0;
     }
 
-    public getMutatedClone ():AISnake {
-        const myClone:AISnake = new AISnake ();
+    public getMutatedClone ():AISnake2Outputs {
+        const myClone:AISnake2Outputs = new AISnake2Outputs ();
         myClone.bodyParts.length = Alias.configService.snakeStartLength;
         myClone.ticks = 0;
         myClone.brain.copyWeightsFrom (this.brain);
@@ -121,7 +120,7 @@ export class AISnake extends Snake {
     }
 
     private createBrain (hiddenLayerLength:number):void {
-        this.brain = new NeuralNetwork (6, hiddenLayerLength, 3);
+        this.brain = new NeuralNetwork (6, hiddenLayerLength, 2);
         this.brain.inputLayer[0].name = NeuronNames.TopClear;
         this.brain.inputLayer[1].name = NeuronNames.BottomClear;
         this.brain.inputLayer[2].name = NeuronNames.RightClear;
@@ -130,9 +129,8 @@ export class AISnake extends Snake {
         this.brain.inputLayer[4].name = NeuronNames.FoodVertical;
         this.brain.inputLayer[5].name = NeuronNames.FoodHorizontal;
 
-        this.brain.outputLayer[0].name = NeuronNames.MoveLeft;
-        this.brain.outputLayer[1].name = NeuronNames.MoveRight;
-        this.brain.outputLayer[2].name = NeuronNames.MoveForeward;
+        this.brain.outputLayer[0].name = NeuronNames.MoveHorizontal;
+        this.brain.outputLayer[1].name = NeuronNames.MoveVertical;
 
         this.brain.randomizeWeights ();
 
@@ -191,37 +189,12 @@ export class AISnake extends Snake {
     }
 
     private determineDir ():void {
-        const leftOutput:number = this.brain.getOutputNeuronFromName (NeuronNames.MoveLeft).output;
-        const rightOutput:number = this.brain.getOutputNeuronFromName (NeuronNames.MoveRight).output;
-        const forewardOutput:number = this.brain.getOutputNeuronFromName (NeuronNames.MoveForeward).output;
-        this.setDir (leftOutput, rightOutput, forewardOutput);
+        const horizontalOutput:number = this.brain.getOutputNeuronFromName (NeuronNames.MoveHorizontal).output;
+        const verticalOutput:number = this.brain.getOutputNeuronFromName (NeuronNames.MoveVertical).output;
+        this.setDir (horizontalOutput, verticalOutput);
     }
 
-    private setDir (leftOutput:number, rightOutput:number, forewardOutput:number){
-        
-        if(forewardOutput > leftOutput && forewardOutput > rightOutput){
-            return;
-        }
-
-        if(leftOutput > rightOutput){
-            switch(this.direction){
-                case Direction.Up:  this.direction = Direction.Left; break;
-                case Direction.Left:  this.direction = Direction.Down; break;
-                case Direction.Down:  this.direction = Direction.Right; break;
-                case Direction.Right:  this.direction = Direction.Up; break;
-            }
-        }else{
-            switch(this.direction){
-                case Direction.Up:  this.direction = Direction.Right; break;
-                case Direction.Left:  this.direction = Direction.Up; break;
-                case Direction.Down:  this.direction = Direction.Left; break;
-                case Direction.Right:  this.direction = Direction.Down; break;
-            }
-        }
-    }
-
-
-    private _setDir (horizontalOutput:number, verticalOutput:number){
+    private setDir (horizontalOutput:number, verticalOutput:number){
         if(horizontalOutput == 0 && verticalOutput == 0){
             return;
         }
@@ -230,12 +203,12 @@ export class AISnake extends Snake {
                 if(this.direction != Direction.Left)
                     this.direction = Direction.Right;
                 else
-                    this._setDir(0, verticalOutput);
+                    this.setDir(0, verticalOutput);
             }else{
                 if(this.direction != Direction.Right)
                     this.direction = Direction.Left;
                 else
-                    this._setDir(0, verticalOutput);
+                    this.setDir(0, verticalOutput);
 
             }
         }else{
@@ -243,13 +216,13 @@ export class AISnake extends Snake {
                 if(this.direction != Direction.Up)
                     this.direction = Direction.Down;
                 else
-                    this._setDir(horizontalOutput, 0);
+                    this.setDir(horizontalOutput, 0);
 
             }else{
                 if(this.direction != Direction.Down)
                     this.direction = Direction.Up;
                 else
-                    this._setDir(horizontalOutput, 0);
+                    this.setDir(horizontalOutput, 0);
 
             }
         }
