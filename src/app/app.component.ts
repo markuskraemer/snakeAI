@@ -16,6 +16,7 @@ export class AppComponent {
     public showGenerations:boolean = true;
     public showHallOfFame:boolean = true;
     public inspectedGame:Game;
+    private _useFastMode:boolean;
 
     constructor(
         public simulation:SimulationService,
@@ -28,6 +29,24 @@ export class AppComponent {
     }
 
     public getInfo ():void {
+    }
+
+    public set useFastMode (value:boolean){
+        if(this._useFastMode != value){
+            this._useFastMode = value;
+
+            if(this._useFastMode){
+                this.tickService.speed = 40;
+                this.tickService.loopsPerTick = 100;
+            }else{
+                this.tickService.speed = 15;
+                this.tickService.loopsPerTick = 1;                
+            }
+        }
+    }
+
+    public get useFastMode (){
+        return this._useFastMode;
     }
 
 }

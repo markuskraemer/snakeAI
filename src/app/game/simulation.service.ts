@@ -18,7 +18,8 @@ export class SimulationService {
     private timeout:any;
     private _autoRunNextGeneration:boolean = true;
     private generationIsFinished:boolean;
-    private countdown:number = 0;
+    private pauseCountdown:number = 0;
+    private statisticCutCount:number = 0;
     public useHallOfFameAsSource:boolean;
     private _showHallOfFame:boolean;
     public hallOfFame:AISnake[] = [];
@@ -26,6 +27,7 @@ export class SimulationService {
     public statistics:IGenerationStatistic[] = [];
     public bodyEnabled:boolean = true;
     public generationsCount:number = 0;
+
 
     public set showHallOfFame (value:boolean){
         if(this._showHallOfFame != value){
@@ -60,7 +62,7 @@ export class SimulationService {
         Alias.simulation = this;
         tickService.tick.subscribe ( () => {
             if(this.generationIsFinished){
-                if(this.autoRunNextGeneration && this.countdown -- == 0){
+                if(this.autoRunNextGeneration && this.pauseCountdown -- == 0){
                     this.runNextGeneration ();
                 }
             }
@@ -139,7 +141,7 @@ export class SimulationService {
         }
 
         if(this.autoRunNextGeneration) {
-            this.countdown = 30;
+            this.pauseCountdown = 30;
 
         }
     }
@@ -158,8 +160,12 @@ export class SimulationService {
             generationNumber: this.currentGeneration.generationNumber,
             averageProgress:avProgress                
         });
-        if(this.statistics.length > 100){
-            this.statistics = this.statistics.filter((value:IGenerationStatistic, index:number) => { return index % 2 == 0 });
+
+        if(this.statistics.length > 50){
+            if((++ this.statisticCutCount) % 2 == 0){ 
+                this.statistics.splice(1, 2);
+            }
+            // this.statistics = this.statistics.filter((value:IGenerationStatistic, index:number) => { return index % 2 == 0 });
         }
     }
 
@@ -187,7 +193,6 @@ export class SimulationService {
 
         this.storageService.save ('hallOfFame', hallOfFameJSON);
 
-        console.log("*** HOF: ", this.hallOfFame);
         console.log("HOF: ", hallOfFameJSON);
 
     }

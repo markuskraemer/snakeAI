@@ -47,11 +47,12 @@ export class GameBackgroudComponent implements OnChanges {
     private draw ():void {
         let context:CanvasRenderingContext2D = this.canvas.nativeElement.getContext ('2d'); 
         context.clearRect (0, 0, this.canvasWidth, this.canvasHeight);
+        let count:number = 0;
         for(let i:number = 0; i < this.width; ++i){
             for(let j:number = 0; j < this.height; ++j){
                 context.strokeStyle = 'white';
                 context.lineWidth = .5;
-                context.fillStyle = (i * this.width + j) %2 == 0 ? '#00ee00' : '#00cc00';
+                context.fillStyle = (count ++) %2 == 0 ? '#00ee00' : '#00cc00';
                 context.fillRect (i * this.tileSize, j * this.tileSize, this.tileSize, this.tileSize);                
                // context.strokeRect (i * this.tileSize, j * this.tileSize, this.tileSize, this.tileSize);                
             }

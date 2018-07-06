@@ -7,10 +7,16 @@
         <input type="checkbox" [(ngModel)]="simulation.useHallOfFameAsSource">useHallOfFameAsSource<br>
         <br>
         <input type="checkbox" [(ngModel)]="simulation.bodyEnabled">Die when hit body<br>
+        -----------<br>
+        <input type="checkbox" [(ngModel)]="useFastMode">Fast Mode<br>
         
-        <input type="number" [(ngModel)]="tickService.loopsPerTick"> loopsPerTick<br>
-        <input type="number" [(ngModel)]="tickService.speed">FPS<br>
-        <input type="number" [(ngModel)]="configService.mutationRate">mutationRate<br>
+        <input type="number" [(ngModel)]="tickService.loopsPerTick"><br>Loops Per Tick<br>
+        <input type="number" [(ngModel)]="tickService.speed"><br>FPS<br>
+        <input type="number" [(ngModel)]="configService.mutationRate"><br>Mutation Rate<br>
+        -----------<br>
+        <input type="number" [(ngModel)]="configService.width"><br>Width<br>
+        <input type="number" [(ngModel)]="configService.height"><br>Height<br>
+        
         <app-neuralNetwork class="network-info" [network]="inspectedGame?inspectedGame.snake.brain:null"></app-neuralNetwork>
     </div>
     <div class="simulation">

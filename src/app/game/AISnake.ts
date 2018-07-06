@@ -7,7 +7,6 @@ import { Snake } from './Snake';
 
 enum NeuronNames {
     TopClear = 'TopClear',
-    BottomClear = 'BottomClear',
     RightClear = 'RightClear',
     LeftClear = 'LeftClear',
     FoodVertical = 'FoodVertical',
@@ -64,8 +63,8 @@ export class AISnake extends Snake {
     }
 
     public toJSON ():any {
-        let { brain, ticks, id, bodyParts } = this;
-        return {brain, ticks, id, bodyParts};
+        let { brain, ticks, id, bodyParts, color } = this;
+        return {brain, ticks, id, bodyParts, color};
     }
 
     public static fromJSON (json:JSON):AISnake {
@@ -78,7 +77,7 @@ export class AISnake extends Snake {
 
         snake.ticks = json['ticks'];
         snake.id = json['id'];
-
+        snake.color = json['color'] || 0xffff00;
         const layers:any[] = json['brain']._layers;
         if(layers.length == 2){
             snake.createBrain (0);
@@ -121,14 +120,13 @@ export class AISnake extends Snake {
     }
 
     private createBrain (hiddenLayerLength:number):void {
-        this.brain = new NeuralNetwork (6, hiddenLayerLength, 3);
+        this.brain = new NeuralNetwork (5, hiddenLayerLength, 3);
         this.brain.inputLayer[0].name = NeuronNames.TopClear;
-        this.brain.inputLayer[1].name = NeuronNames.BottomClear;
-        this.brain.inputLayer[2].name = NeuronNames.RightClear;
-        this.brain.inputLayer[3].name = NeuronNames.LeftClear;
+        this.brain.inputLayer[1].name = NeuronNames.RightClear;
+        this.brain.inputLayer[2].name = NeuronNames.LeftClear;
 
-        this.brain.inputLayer[4].name = NeuronNames.FoodVertical;
-        this.brain.inputLayer[5].name = NeuronNames.FoodHorizontal;
+        this.brain.inputLayer[3].name = NeuronNames.FoodVertical;
+        this.brain.inputLayer[4].name = NeuronNames.FoodHorizontal;
 
         this.brain.outputLayer[0].name = NeuronNames.MoveLeft;
         this.brain.outputLayer[1].name = NeuronNames.MoveRight;
@@ -221,39 +219,6 @@ export class AISnake extends Snake {
     }
 
 
-    private _setDir (horizontalOutput:number, verticalOutput:number){
-        if(horizontalOutput == 0 && verticalOutput == 0){
-            return;
-        }
-        if(Math.abs(horizontalOutput) > Math.abs(verticalOutput)) {
-            if(horizontalOutput > 0){
-                if(this.direction != Direction.Left)
-                    this.direction = Direction.Right;
-                else
-                    this._setDir(0, verticalOutput);
-            }else{
-                if(this.direction != Direction.Right)
-                    this.direction = Direction.Left;
-                else
-                    this._setDir(0, verticalOutput);
-
-            }
-        }else{
-            if(verticalOutput > 0){
-                if(this.direction != Direction.Up)
-                    this.direction = Direction.Down;
-                else
-                    this._setDir(horizontalOutput, 0);
-
-            }else{
-                if(this.direction != Direction.Down)
-                    this.direction = Direction.Up;
-                else
-                    this._setDir(horizontalOutput, 0);
-
-            }
-        }
-    }
 
     private calc (n:number):number {
         return n / this.game.width;
@@ -294,18 +259,40 @@ export class AISnake extends Snake {
         // border
         if(this._borderNeuronsEnabled){
 
-            const topIsClear:boolean = this.isClear (headPos.x, headPos.y - 1);
-            const bottomIsClear:boolean = this.isClear (headPos.x, headPos.y + 1);
-            const rightIsClear:boolean = this.isClear (headPos.x + 1, headPos.y);
-            const leftIsClear:boolean = this.isClear (headPos.x - 1, headPos.y);
+            const topIsClear:number = this.isClear (headPos.x, headPos.y - 1) ? 1 : 0;
+            const bottomIsClear:number = this.isClear (headPos.x, headPos.y + 1) ? 1 : 0;
+            const rightIsClear:number = this.isClear (headPos.x + 1, headPos.y) ? 1 : 0;
+            const leftIsClear:number = this.isClear (headPos.x - 1, headPos.y) ? 1 : 0;
 
-            this.brain.getInputNeuronFromName (NeuronNames.TopClear).input = topIsClear ? 1 : 0;
-            this.brain.getInputNeuronFromName (NeuronNames.BottomClear).input = bottomIsClear ? 1 : 0;
-            this.brain.getInputNeuronFromName (NeuronNames.RightClear).input = rightIsClear ? 1 : 0;
-            this.brain.getInputNeuronFromName (NeuronNames.LeftClear).input = leftIsClear ? 1 : 0;
-        }else{
+            switch(this.direction){
+                case Direction.Up:
+                    this.brain.getInputNeuronFromName (NeuronNames.TopClear).input = topIsClear;
+                    this.brain.getInputNeuronFromName (NeuronNames.RightClear).input = rightIsClear;
+                    this.brain.getInputNeuronFromName (NeuronNames.LeftClear).input = leftIsClear;
+                    break;
+
+                case Direction.Left:
+                    this.brain.getInputNeuronFromName (NeuronNames.TopClear).input = leftIsClear;
+                    this.brain.getInputNeuronFromName (NeuronNames.RightClear).input = topIsClear;
+                    this.brain.getInputNeuronFromName (NeuronNames.LeftClear).input = bottomIsClear;
+                    break;
+
+                case Direction.Down:
+                    this.brain.getInputNeuronFromName (NeuronNames.TopClear).input = bottomIsClear;
+                    this.brain.getInputNeuronFromName (NeuronNames.RightClear).input = leftIsClear;
+                    this.brain.getInputNeuronFromName (NeuronNames.LeftClear).input = rightIsClear;
+                    break;
+
+                case Direction.Right:
+                    this.brain.getInputNeuronFromName (NeuronNames.TopClear).input = rightIsClear;
+                    this.brain.getInputNeuronFromName (NeuronNames.RightClear).input = bottomIsClear;
+                    this.brain.getInputNeuronFromName (NeuronNames.LeftClear).input = topIsClear;
+                    break;
+
+            }
+
+        }else {
             this.brain.getInputNeuronFromName (NeuronNames.TopClear).input = 0;
-            this.brain.getInputNeuronFromName (NeuronNames.BottomClear).input = 0;
             this.brain.getInputNeuronFromName (NeuronNames.RightClear).input = 0;
             this.brain.getInputNeuronFromName (NeuronNames.LeftClear).input = 0;
         }
@@ -313,11 +300,33 @@ export class AISnake extends Snake {
         // food
         if(this._foodNeuronsEnabled){
 
-            const distFoodVertical:number = foodPos.y - headPos.y;
-            const distFoodHorizontal:number = foodPos.x - headPos.x;
+            const distFoodVertical:number = this.minus1_0_1(foodPos.y - headPos.y);
+            const distFoodHorizontal:number = this.minus1_0_1(foodPos.x - headPos.x);
 
-            this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = this.minus1_0_1(distFoodVertical);
-            this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = this.minus1_0_1(distFoodHorizontal);
+            switch(this.direction){
+                case Direction.Up:
+                    this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = this.minus1_0_1(distFoodVertical);
+                    this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = this.minus1_0_1(distFoodHorizontal);
+                    break;
+
+                case Direction.Down:
+                    this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = - this.minus1_0_1(distFoodVertical);
+                    this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = - this.minus1_0_1(distFoodHorizontal);
+                    break;
+
+                case Direction.Left:
+                    this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = this.minus1_0_1(distFoodHorizontal);
+                    this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = -this.minus1_0_1(distFoodVertical);
+                    break;
+
+                case Direction.Right:
+                    this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = -this.minus1_0_1(distFoodHorizontal);
+                    this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = this.minus1_0_1(distFoodVertical);
+                    break;
+
+            }
+
+
         }else{
             this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = 0;
             this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = 0;

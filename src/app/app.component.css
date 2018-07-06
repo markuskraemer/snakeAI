@@ -15,6 +15,7 @@
 
 .ui {
     width:400px;
+    overflow-y: scroll;
 }
 
 .network-info {

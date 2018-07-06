@@ -22,7 +22,6 @@ export class Snake implements IStorable {
         this.id = '' + Snake.count ++; 
         const c:number = 0x777777;
         this.color = Math.floor(Math.random () * (c)) + c;
-        console.log("new color: " + this.color.toString(16));
         this.bodyParts = [new XY ()];
     }
 
