@@ -17,13 +17,13 @@ export class ConfigService {
 
     public readonly autoRunNextgeneration:boolean = true;
 
-    public readonly width:number = 15;
-    public readonly height:number = 15;
+    public width:number = 15;
+    public height:number = 15;
     public readonly tileSize:number = 6;
     public readonly fps:number = 84;
     public readonly snakeStartLength:number = 3;
     public readonly hiddenNeurons:number = 0;
     public readonly bestStoredSnakesCount:number = 4;
     public readonly hallOfFameLength:number = 5;
-    public mutationRate:number = .1;
+    public mutationRate:number = .8;
 }

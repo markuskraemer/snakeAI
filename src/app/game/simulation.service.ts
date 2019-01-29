@@ -26,6 +26,8 @@ export class SimulationService {
     public currentGeneration:StaticGeneration;
     public statistics:IGenerationStatistic[] = [];
     public bodyEnabled:boolean = true;
+    public bodyNeuronsEnabled:boolean = true;
+    public foodNeuronsEnabled:boolean = true;
     public generationsCount:number = 0;
 
 

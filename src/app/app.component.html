@@ -1,21 +1,44 @@
 <div class="main">
     <div class="ui">
-        <input type="button" value="{{tickService.isRunning?'Stop':'Start'}}" (click)="tickService.isRunning?tickService.stop():tickService.start()"><br>
-        <input type="checkbox" [(ngModel)]="showGenerations">show Generations<br>
-        <input type="checkbox" [(ngModel)]="simulation.showHallOfFame">show HallOfFame<br>
-        <input type="checkbox" [(ngModel)]="simulation.autoRunNextGeneration">autoRunNextGeneration<br>
-        <input type="checkbox" [(ngModel)]="simulation.useHallOfFameAsSource">useHallOfFameAsSource<br>
+        <input type="button" class="big-button" 
+            value="{{showGenerations?'Hide Simulation':'Show Simulation'}}" 
+            (click)="showGenerations=!showGenerations"><br>
+        <hr>
+        <label>
+            <input type="checkbox" [(ngModel)]="simulation.showHallOfFame" name="showHallOfFame">show HallOfFame
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" [(ngModel)]="simulation.autoRunNextGeneration">autoRunNextGeneration
+        </label>
+        <br>
+        <!--<input type="checkbox" [(ngModel)]="simulation.useHallOfFameAsSource">useHallOfFameAsSource<br>
+        
         <br>
         <input type="checkbox" [(ngModel)]="simulation.bodyEnabled">Die when hit body<br>
-        -----------<br>
-        <input type="checkbox" [(ngModel)]="useFastMode">Fast Mode<br>
-        
-        <input type="number" [(ngModel)]="tickService.loopsPerTick"><br>Loops Per Tick<br>
-        <input type="number" [(ngModel)]="tickService.speed"><br>FPS<br>
-        <input type="number" [(ngModel)]="configService.mutationRate"><br>Mutation Rate<br>
-        -----------<br>
-        <input type="number" [(ngModel)]="configService.width"><br>Width<br>
-        <input type="number" [(ngModel)]="configService.height"><br>Height<br>
+        <input type="checkbox" [(ngModel)]="simulation.foodNeuronsEnabled">Food Neurons<br>
+        <input type="checkbox" [(ngModel)]="simulation.bodyNeuronsEnabled">Body Neurons<br>
+        -->
+        <hr>
+        <input type="button" class="big-button" 
+            value="{{tickService.isRunning?'Stop':'Start'}}" 
+            (click)="tickService.isRunning?tickService.stop():tickService.start()">
+
+        <input type="button" class="big-button" 
+            value="{{useFastMode?'Slow Mode':'Fast Mode'}}" 
+            (click)="useFastMode=!useFastMode"><br>
+
+        <input type="number" [(ngModel)]="tickService.loopsPerTick">Loops Per Tick
+        <br>
+        <input type="number" [(ngModel)]="tickService.speed">FPS
+        <br>
+        <input type="number" [(ngModel)]="configService.mutationRate">Mutation Rate
+        <br>
+        <hr>
+        <input type="number" [(ngModel)]="configService.width">Width
+        <br>
+        <input type="number" [(ngModel)]="configService.height">Height
+        <br>
         
         <app-neuralNetwork class="network-info" [network]="inspectedGame?inspectedGame.snake.brain:null"></app-neuralNetwork>
     </div>
@@ -30,12 +53,15 @@
                         [class.good]="game.isGood"
                         [class.inspected]="game==inspectedGame"
                         (click)="inspectedGame=game">
-                    <div class="score">({{i}}) {{game.snake.bodyParts.length}} | {{game.snake.ticks}}</div> 
+                    <div class="score">{{i}}: {{game.snake.bodyParts.length}} | {{game.snake.ticks}}</div> 
                     <app-game-bg [width]="game.width" [height]="game.height" [tileSize]="game.tileSize" class="game-layer"></app-game-bg>
                     <app-game-fg [width]="game.width" [height]="game.height" [tileSize]="game.tileSize" class="game-layer"
                         [snake]="game.snake" [foodPos]="game.foodPos">
                     </app-game-fg>
                 </div>
+        </div>
+        <div *ngIf="!showGenerations" (click)="showGenerations=true">
+            <h1>Click here to show Simulation</h1>
         </div>
     </div>
 </div>

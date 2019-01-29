@@ -11,11 +11,16 @@ enum NeuronNames {
     LeftClear = 'LeftClear',
     FoodVertical = 'FoodVertical',
     FoodHorizontal = 'FoodHorizontal',
+    MostBodyPartsHorizontal = 'MostBodyPartsHorizontal',
+    MostBodyPartsVertical = 'MostBodyPartsVertical',
     MoveLeft = 'MoveLeft',
     MoveRight = 'MoveRight',
     MoveForeward = 'MoveForeward'
 }
 
+enum Sector {
+    tl, tr, bl, br
+}
 
 export class AISnake extends Snake {
 
@@ -128,46 +133,15 @@ export class AISnake extends Snake {
         this.brain.inputLayer[3].name = NeuronNames.FoodVertical;
         this.brain.inputLayer[4].name = NeuronNames.FoodHorizontal;
 
+        //this.brain.inputLayer[5].name = NeuronNames.MostBodyPartsVertical;
+        //this.brain.inputLayer[6].name = NeuronNames.MostBodyPartsHorizontal;
+
         this.brain.outputLayer[0].name = NeuronNames.MoveLeft;
         this.brain.outputLayer[1].name = NeuronNames.MoveRight;
         this.brain.outputLayer[2].name = NeuronNames.MoveForeward;
 
         this.brain.randomizeWeights ();
 
-    }
-
-    protected synchronizeWeights ():void {
-
-        const weightBorderHor:number = this.brain.getConnectionWeight(1, 0, 0);
-        const weightBorderVert:number = this.brain.getConnectionWeight(1, 0, 2);
-
-        for(let i:number = 0; i < this.brain.hiddenLayer.length; ++i){
-            if(i % 2 == 0){
-                this.brain.setConnectionWeight (1, i, 0, weightBorderHor);
-                this.brain.setConnectionWeight (1, i, 1, weightBorderHor);
-                this.brain.setConnectionWeight (1, i, 2, weightBorderVert);
-                this.brain.setConnectionWeight (1, i, 3, weightBorderVert);
-            }else{
-                this.brain.setConnectionWeight (1, i, 0, weightBorderVert);
-                this.brain.setConnectionWeight (1, i, 1, weightBorderVert);
-                this.brain.setConnectionWeight (1, i, 2, weightBorderHor);
-                this.brain.setConnectionWeight (1, i, 3, weightBorderHor);
-            }
-        }
-
-        const weightFoodHor:number = this.brain.getConnectionWeight(1, 0, 4);
-        const weightFoodVert:number = 1 - weightFoodHor;
-        for(let i:number = 0; i < this.brain.hiddenLayer.length; ++i){
-            if(i % 2 == 0){
-                this.brain.setConnectionWeight (1, i, 4, weightFoodHor);
-                this.brain.setConnectionWeight (1, i, 5, weightFoodVert);
-           }else{
-                this.brain.setConnectionWeight (1, i, 4, weightFoodVert);
-                this.brain.setConnectionWeight (1, i, 5, weightFoodHor);
-           }
-        }
-
-     
     }
 
     public tick ():void {
@@ -182,7 +156,7 @@ export class AISnake extends Snake {
     }
 
     private checkNoFoodPeriod ():void {
-        if(this.noFoodTicks > 100) {
+        if(this.noFoodTicks > 300) {
             this.killedBecauseOfCircularMotion = true;
             this.game.snakeDead ();
         }
@@ -243,17 +217,6 @@ export class AISnake extends Snake {
 
     private updateInput ():void {
         const headPos:XY = this.bodyParts[0];
-
-        if(headPos.x == 0|| headPos.x == this.game.width-1){
-            if(headPos.y == 0 || headPos.y == this.game.height-1){
-               // debugger;
-            }
-        }else if(headPos.y == 0){
-            if(headPos.x == 0 || headPos.x == this.game.width-1){
-                // debugger;
-            }
-        }
-
         const foodPos:XY = this.game.foodPos;
 
         // border
@@ -298,7 +261,7 @@ export class AISnake extends Snake {
         }
 
         // food
-        if(this._foodNeuronsEnabled){
+        if(Alias.simulation.foodNeuronsEnabled){
 
             const distFoodVertical:number = this.minus1_0_1(foodPos.y - headPos.y);
             const distFoodHorizontal:number = this.minus1_0_1(foodPos.x - headPos.x);
@@ -331,40 +294,80 @@ export class AISnake extends Snake {
             this.brain.getInputNeuronFromName (NeuronNames.FoodVertical).input = 0;
             this.brain.getInputNeuronFromName (NeuronNames.FoodHorizontal).input = 0;
         }
+        /*
+        if(Alias.simulation.bodyNeuronsEnabled){
+
+            const sec:XY = this.updateBodyOnMapSectors ();
+            const distBodyMassVertical:number = this.minus1_0_1(sec.y - headPos.y);
+            const distBodyMassHorizontal:number = this.minus1_0_1(sec.x - headPos.x);
+
+            switch(this.direction){
+                case Direction.Up:
+                    this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsVertical).input = this.minus1_0_1(distBodyMassVertical);
+                    this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsHorizontal).input = this.minus1_0_1(distBodyMassHorizontal);
+                    break;
+
+                case Direction.Down:
+                    this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsVertical).input = - this.minus1_0_1(distBodyMassVertical);
+                    this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsHorizontal).input = - this.minus1_0_1(distBodyMassHorizontal);
+                    break;
+
+                case Direction.Left:
+                    this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsVertical).input = this.minus1_0_1(distBodyMassHorizontal);
+                    this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsHorizontal).input = -this.minus1_0_1(distBodyMassVertical);
+                    break;
+
+                case Direction.Right:
+                    this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsVertical).input = -this.minus1_0_1(distBodyMassHorizontal);
+                    this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsHorizontal).input = this.minus1_0_1(distBodyMassVertical);
+                    break;
+
+            }
+
+        }else{
+            this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsVertical).input = 0;
+            this.brain.getInputNeuronFromName (NeuronNames.MostBodyPartsHorizontal).input = 0;
+
+        }*/
+
     }
 
-    private getClosestDistBodyPartHorizontal (headPos:XY, isLeft:boolean):number {
-        const bodyPartsOnRow:XY[] = this.getBodyPartsOnRow (headPos.y);
-        let closestDist:number = isLeft ? - this.game.width - 2 : this.game.width + 2;
-        for(let bodyPart of bodyPartsOnRow){
-            if((isLeft && (bodyPart.x < headPos.x)) || (!isLeft && (bodyPart.x > headPos.x))){
-                if(Math.abs(bodyPart.x - headPos.x) < Math.abs(closestDist)){
-                    closestDist = bodyPart.x - headPos.x;
+    private updateBodyOnMapSectors ():XY {
+        let tlCount:number = 0;
+        let trCount:number = 0;
+        let blCount:number = 0;
+        let brCount:number = 0;
+        this.bodyParts.forEach ( (part:XY) => {
+            if(part.x < this.game.width / 2){
+                if(part.y < this.game.height / 2){
+                    tlCount++;
+                }else{
+                    blCount++;
+                }
+            }else{
+                if(part.y < this.game.height / 2){
+                    trCount++;
+                }else{
+                    brCount++;
                 }
             }
+        });
+
+        if(tlCount < trCount && tlCount < blCount && tlCount < brCount){
+            return new XY (this.game.width*.25, this.game.height*.25);
         }
-        return closestDist;
-    }
-
-    private getClosestDistBodyPartVertical (headPos:XY, isTop:boolean):number {
-        const bodyPartsOnCol:XY[] = this.getBodyPartsOnCol (headPos.x);
-        let closestDist:number = isTop ? - this.game.height - 2 : this.game.height + 2;
-        for(let bodyPart of bodyPartsOnCol){
-            if((isTop && (bodyPart.y < headPos.y)) || (!isTop && (bodyPart.y > headPos.y))) {
-                if(Math.abs(bodyPart.y - headPos.y) < Math.abs(closestDist)){
-                    closestDist = bodyPart.y - headPos.y;
-                }
-            }
+        
+        if(trCount < blCount && trCount < brCount){
+            return new XY (this.game.width*.75, this.game.height*.25);
         }
-        return closestDist;
+
+        if(blCount < brCount){
+            return new XY (this.game.width*.25, this.game.height*.75);
+        }
+
+        return new XY (this.game.width*.75, this.game.height*.75);
+
     }
 
-    private getBodyPartsOnRow (row:number):XY[]{
-        return this.bodyParts.filter ((value:XY, index:number) => { return index > 0 && value.y == row }); 
-    }
-
-    private getBodyPartsOnCol (col:number):XY[]{
-        return this.bodyParts.filter ((value:XY, index:number) => { return index > 0 && value.x == col }); 
-    }
 
 }
