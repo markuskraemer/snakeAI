@@ -1,12 +1,12 @@
+import { TfSnake } from './TfSnake';
 import { EventEmitter } from '@angular/core';
 import { XY } from './../model/XY';
 import { Alias } from './../Alias';
-import { AISnake } from './AISnake';
 export class Game {
 
     private subscriptions:any[] = [];
 
-    public snake:AISnake;
+    public snake:TfSnake;
     public foodPos:XY = new XY ();
     public isRunning:boolean;
     public isGood:boolean;
@@ -16,7 +16,7 @@ export class Game {
         
     }
 
-    public start (snake:AISnake):void {
+    public start (snake:TfSnake):void {
         this.snake = snake;
         this.snake.game = this;
         this.snake.setToGameStartValues ();

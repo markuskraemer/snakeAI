@@ -11,19 +11,23 @@ export class ConfigService {
     }
     public readonly gamesPerGeneration:number = 44;
 
-    public get bestGamesCount ():number {
-        return Math.ceil(this.gamesPerGeneration / 12);
+    public get bestGamesSeedCount ():number {
+        return Math.ceil(this.gamesPerGeneration / 5);
     }
 
-    public readonly autoRunNextgeneration:boolean = true;
+    public get bestGamesChildrenCount ():number {
+        return this.gamesPerGeneration * .75;
+    }
+
+    public readonly autoRunNextgeneration:boolean = false;
 
     public width:number = 15;
     public height:number = 15;
     public readonly tileSize:number = 6;
-    public readonly fps:number = 84;
+    public readonly fps:number = 40;
     public readonly snakeStartLength:number = 3;
-    public readonly hiddenNeurons:number = 0;
+    public readonly hiddenNeurons:number = 12;
     public readonly bestStoredSnakesCount:number = 4;
     public readonly hallOfFameLength:number = 5;
-    public mutationRate:number = .8;
+    public mutationRate:number = .2;
 }

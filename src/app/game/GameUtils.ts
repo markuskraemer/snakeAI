@@ -1,10 +1,10 @@
-import { AISnake } from './AISnake';
+import { TfSnake } from './TfSnake';
 import { Game } from './Game';
 export class GameUtils {
 
 
-    public static sortSnakes (snakes:AISnake[]):AISnake[]{
-        const copy:AISnake[] = snakes.concat ();
+    public static sortSnakes (snakes:TfSnake[]):TfSnake[]{
+        const copy:TfSnake[] = snakes.concat ();
         copy.sort (GameUtils.compareSnakes);
         return copy;
     }
@@ -17,7 +17,7 @@ export class GameUtils {
         return copy;
     }
 
-    private static compareSnakes (a:AISnake, b:AISnake):number {
+    private static compareSnakes (a:TfSnake, b:TfSnake):number {
         if(a.bodyParts.length > b.bodyParts.length){
             return -1;
         }else if(a.bodyParts.length == b.bodyParts.length){

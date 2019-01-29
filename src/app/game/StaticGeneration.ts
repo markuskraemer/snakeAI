@@ -1,28 +1,27 @@
+import { Generation } from './Generation';
 import { GameUtils } from './GameUtils';
 import { EventEmitter } from '@angular/core';
 import { Alias } from './../Alias';
-import { AISnake } from './AISnake';
+import { TfSnake } from './TfSnake';
 import { Game } from './Game';
 export class StaticGeneration {
 
+    public readonly finished:EventEmitter<null> = new EventEmitter ();
     protected subscribtions:any[] = [];
     protected endedCount:number;
     public generationNumber:number = 0;
     public games:Game[];
-    public readonly finished:EventEmitter<null> = new EventEmitter ();
+    protected seedSnakes:TfSnake[];
 
-    constructor (protected seedSnakes:AISnake[]){
+    constructor (){
     }
 
     public destroy ():void {
         this.subscribtions.forEach ((subscribtion:any)=>subscribtion.unsubscribe ());
     }
 
-    public run ():void {
-        if(this.seedSnakes == null || this.seedSnakes.length == 0){
-            console.error("no seed snakes! cannot start run");
-            return;
-        }
+    public run (seedSnakes:TfSnake[]):void {
+        this.seedSnakes = seedSnakes;
 
         this.games = [];
         this.endedCount = 0;
@@ -30,20 +29,19 @@ export class StaticGeneration {
             let game:Game = new Game (Alias.configService.width, Alias.configService.height, Alias.configService.tileSize);
             this.subscribtions.push (game.ended.subscribe (()=>this.handleGameEnded (game)));
             this.games.push(game);
-            let snake:AISnake = this.seedSnakes[i].clone ();
+            let snake:TfSnake = this.seedSnakes[i].clone ();
             game.start (snake);
         }
     }
     
-    public getBestSnakes ():AISnake []{        
+    public getBestSnakes ():TfSnake []{        
         const gamesCopy:Game[] = this.getBestGames ();
         return gamesCopy.map ((game:Game) => { return game.snake });
     }
 
     public getBestGames ():Game []{
-        const count:number = Alias.configService.bestGamesCount;
         const gamesCopy:Game[] = GameUtils.sortGames (this.games);
-        gamesCopy.splice(count);
+        gamesCopy.splice(Alias.configService.bestGamesSeedCount);
         return gamesCopy;
     }
 

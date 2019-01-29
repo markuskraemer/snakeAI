@@ -4,7 +4,7 @@ import { IGenerationStatistic } from './../model/IGenerationStatistic';
 import { ConfigService } from './../config.service';
 import { Alias } from './../Alias';
 import { TickService } from './../tick.service';
-import { AISnake } from './AISnake';
+import { TfSnake } from './TfSnake';
 import { IStorageDescribtion } from './../storage/IStorageDescribtion';
 import { StorageService } from './../storage/storage.service';
 import { Generation } from './Generation';
@@ -22,7 +22,7 @@ export class SimulationService {
     private statisticCutCount:number = 0;
     public useHallOfFameAsSource:boolean;
     private _showHallOfFame:boolean;
-    public hallOfFame:AISnake[] = [];
+    public hallOfFame:TfSnake[] = [];
     public currentGeneration:StaticGeneration;
     public statistics:IGenerationStatistic[] = [];
     public bodyEnabled:boolean = true;
@@ -73,7 +73,7 @@ export class SimulationService {
     }
 
     public start ():void{
-        this.loadHallOfFame ();
+        // this.loadHallOfFame ();
         this.runFirstOrStoredGeneration ();
     }
 
@@ -81,7 +81,7 @@ export class SimulationService {
         const fileList:any[] = this.storageService.load ('hallOfFame');        
         if(fileList && fileList.length > 0){
             fileList.forEach((value:JSON, index:number) => {
-                this.hallOfFame.push(AISnake.fromJSON(value));
+                this.hallOfFame.push(TfSnake.fromJSON(value));
             })
         }     
         this.sortHallOfFame ();       
@@ -90,42 +90,43 @@ export class SimulationService {
     public runFirstOrStoredGeneration ():void {
         
         const fileList:any[] = this.storageService.load ('bestPool');
-        const startSnakes:AISnake[] = [];
-        
+        const startSnakes:TfSnake[] = [];
+        /*
         if(fileList && fileList.length > 0){
             fileList.forEach((value:JSON, index:number) => {
-                startSnakes.push(AISnake.fromJSON(value));
+                startSnakes.push(TfSnake.fromJSON(value));
             })
         }else{
-            startSnakes.push(new AISnake ());
-        }
-
-        this.currentGeneration = new Generation (startSnakes);
-        this.doRunGeneration ();
+            startSnakes.push(new TfSnake ());
+        }*/
+        startSnakes.push(new TfSnake ());
+        this.currentGeneration = new Generation ();
+        this.doRunGeneration (startSnakes);
     }
 
     private runNextGeneration () {
         const oldGeneration:StaticGeneration = this.currentGeneration;
         
         if(this.showHallOfFame){
-            this.currentGeneration = new StaticGeneration (this.hallOfFame);
-        }else if(this.useHallOfFameAsSource){
-            this.currentGeneration = new Generation (this.hallOfFame);
+            this.currentGeneration = new StaticGeneration ();
+            this.doRunGeneration (this.hallOfFame);
         }else if(oldGeneration['next']){
             this.currentGeneration = (<Generation>oldGeneration).next ();
+            const bestSnakes:TfSnake[] = oldGeneration.getBestSnakes ().concat(this.hallOfFame);
+            console.log('### bestSnakes: ', bestSnakes);
+            this.doRunGeneration(bestSnakes);
         }else{
             this.runFirstOrStoredGeneration ();
             return;
         }
         oldGeneration.destroy ();
-        this.doRunGeneration ();
     } 
 
-    private doRunGeneration ():void {
+    private doRunGeneration (snakes:TfSnake[]):void {
         this.generationsCount ++;
         this.generationIsFinished = false;
         this.subscribtion = this.currentGeneration.finished.subscribe (()=>this.handleGenerationFinished());
-        this.currentGeneration.run ();
+        this.currentGeneration.run (snakes);
     }
 
     private handleGenerationFinished ():void {
@@ -172,9 +173,9 @@ export class SimulationService {
     }
 
     private storeBestSnakes ():void {
-        const bestSnakes:AISnake[] = this.currentGeneration.getBestSnakes ();
+        const bestSnakes:TfSnake[] = this.currentGeneration.getBestSnakes ();
         const bestSnakesJSON:any[] = [];
-        bestSnakes.forEach((snake:AISnake) => bestSnakesJSON.push(snake.toJSON()));
+        bestSnakes.forEach((snake:TfSnake) => bestSnakesJSON.push(snake.toJSON()));
         this.storageService.save ('bestPool', bestSnakesJSON);
     }
 
@@ -185,13 +186,13 @@ export class SimulationService {
 
     private updateHallOfFame ():void {
 
-        const bestSnakes:AISnake[] = this.currentGeneration.getBestSnakes ();
-        const bestFromPool:AISnake[] = bestSnakes.splice (0, this.configService.hallOfFameLength);
+        const bestSnakes:TfSnake[] = this.currentGeneration.getBestSnakes ();
+        const bestFromPool:TfSnake[] = bestSnakes.splice (0, this.configService.hallOfFameLength);
         this.hallOfFame = this.hallOfFame.concat (bestFromPool);
         this.hallOfFame = GameUtils.sortSnakes(this.hallOfFame);
         this.hallOfFame.length = Math.min(this.hallOfFame.length, this.configService.hallOfFameLength);
         
-        const hallOfFameJSON:any[] = this.hallOfFame.map((snake:AISnake) => { return snake.toJSON (); } );
+        const hallOfFameJSON:any[] = this.hallOfFame.map((snake:TfSnake) => { return snake.toJSON (); } );
 
         this.storageService.save ('hallOfFame', hallOfFameJSON);
 
